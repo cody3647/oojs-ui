@@ -1,0 +1,165 @@
+@omen-color-base0:    #f2f2f2;    // = HSB 0°, 0%, 0%
+@omen-color-base10:   #f2f2f2; // = HSB 210°, 6%, 13%
+@omen-color-base20:   #eaecf0; // = HSB 207°, 10%, 36%; WCAG 2.0 level AAA 7.09:1 contrast ratio on `#fff`
+@omen-color-base30:   #d4d4d4; // = HSB 210°, 9%, 49%; WCAG 2.0 level AA at 4.52:1 contrast ratio on `#fff`
+@omen-color-base50:   #c8ccd1; // = HSB 212°, 8%, 69%
+@omen-color-base70:   #72777d; // = HSB 213°, 4%, 82%
+@omen-color-base80:   #54595d; // = HSB 220°, 3%, 94%
+@omen-color-base90:   #3C3C3C; // = HSB 210°, 1%, 98%
+@omen-color-base100:  #0a0a0a;    // = HSB 0°, 0%, 100%
+
+@omen-color-accent30: #2a4b8d; // = HSB 220°, 70%, 55%
+@omen-color-accent50: #36c;    // = HSB 220°, 75%, 80%
+@omen-color-accent90: #eaf3ff; // = HSB 214°, 8%, 100%
+
+@omen-color-red30: #702c2c; // = HSB 360°, 80%, 70%
+@omen-color-red50: #984d4d;    // = HSB 360°, 77%, 87%
+@omen-color-red90:    #fee7e6; // = HSB 3°, 9%, 100%
+
+@omen-color-yellow30: #ac6600; // = HSB 36°, 100%, 67%
+@omen-color-yellow50: #fc3;    // = HSB 45°, 80%, 100%
+@omen-color-yellow90: #fef6e7; // = HSB 39°, 9%, 100%
+
+@omen-color-green30: #005445; // = HSB 167°, 85%, 53%
+@omen-color-green50: #00af89; // = HSB 167°, 100%, 69%
+@omen-color-green90: #00f8c3; // = HSB 166°, 16%, 99%
+
+// Modifier colors, not part of official palette, limited to interaction state usage.
+@omen-color-base10--lighten: #B5B5B5;
+@omen-color-accent50--lighten: #447ff5; // = `lighten( @color-primary, 3 )`
+@omen-color-red50--lighten: #a20000; // ~= `filter: brightness( 120% )`
+@omen-color-green50--lighten: #1c6665;
+@omen-color-purple50: #6b4ba1;
+
+// From the Pensieve Theme Style Omen
+@omen-color-dark:#363636;
+@omen-color-light:#c5c5c5;
+
+@omen-color-cyan:#45C3B8;
+@omen-color-cyan-bright:#65CDC4;
+@omen-color-cyan-dark:#008080;
+
+// From here on no static color values, only variable references.
+// Background Colors
+@background-color-base:           @omen-color-base80;
+@background-color-base--hover:    @omen-color-base70;
+@background-color-base--disabled: @omen-color-base80;
+@background-color-code:           @omen-color-base70;
+// 'Framed' UI elements (Framed Buttons, Dropdowns, ToggleSwitches…)
+@background-color-framed:         @omen-color-base70;
+@background-color-framed--hover:  @omen-color-base80;
+@background-color-framed--active: @omen-color-base90;
+// 'Filled' UI elements (Checkboxes, Radios, ProgressBars…)
+@background-color-filled--disabled: @omen-color-base90;
+// Binary Input elements (Checkboxes, Radios, Toggle Switches)
+@background-color-input-binary--active: @color-primary--active;
+@background-color-input-binary--checked: @color-primary;
+// Quiet Buttons
+@background-color-quiet:          @background-color-base;
+// Use `rgba()` values here as the quiet buttons need to blend in with background.
+@background-color-quiet--hover:   rgba( 0, 24, 73, 7/255 ); // = `@omen-color-base90` on white.
+@background-color-quiet--active:  rgba( 0, 36, 73, 21/255 ); // = `@omen-color-base80` on white.
+// Toolbar and Tools
+@background-color-toolbar:        @background-color-base;
+@background-color-tool--hover:    @background-color-base--hover;
+@background-color-tool--active:   @background-color-primary;
+@background-color-tool--active-hover: @background-color-primary--hover;
+// Tabs Navigation Background Color
+@background-color-tabs:           @omen-color-base80;
+// User system messages (errors, warnings, successes, notices)
+@background-color-error--framed: @omen-color-red30;
+@background-color-warning--framed: @omen-color-yellow30;
+@background-color-success--framed: @omen-color-green30;
+@background-color-notice--framed: @omen-color-base80;
+// Highlight Colors for text highlighting, think metaphorically text marker
+@background-color-highlight:      rgba( 255, 182, 13, 0.4 ); // Equals to `#ffe29e` on `#fff` background.
+
+// Foreground Colors
+@color-base:                      @omen-color-base10;
+@color-base--hover:               @omen-color-base30;
+@color-base--active:              @omen-color-base0;
+@color-base--inverted:            @omen-color-base90;
+@color-base--emphasized:          @omen-color-base0;
+@color-base--subtle:              @omen-color-base30;
+@color-base--disabled:            @omen-color-base70;
+@color-filled--disabled:          @color-base--inverted;
+@color-placeholder:               @omen-color-base30;
+// Primary 'Progressive' Color, Background Color and states
+@background-color-primary:        @omen-color-base80;
+@background-color-primary--hover: rgba( 41, 98, 204, 0.1 );
+@color-primary:                   @omen-color-cyan;
+@color-primary--hover:            @omen-color-cyan-bright;
+@color-primary--active:           @omen-color-cyan-dark;
+@color-primary--focus:            @color-primary;
+// 'Destructive' Color, Background Color and states
+@background-color-destructive:    @omen-color-red90;
+@color-destructive:               @omen-color-red50;
+@color-destructive--hover:        @omen-color-red50--lighten;
+@color-destructive--active:       @omen-color-red30;
+@color-destructive--focus:        @color-destructive;
+// Secondary Color and states (links only)
+@color-secondary:                 @omen-color-green50;
+@color-secondary--hover:          @omen-color-green50--lighten;
+@color-secondary--active:         @omen-color-green30;
+@color-secondary--focus:          @color-secondary;
+// User system messages (errors, warnings, successes, notices)
+@color-error:                     @omen-color-red50;
+@color-warning:                   @omen-color-base0;
+@color-success:                   @omen-color-green50;
+@color-success--framed:           @omen-color-base0;
+@color-notice:                    @omen-color-base0;
+// Toolbar and Tools
+@color-tool--hover:               @color-base--emphasized; // Used here in combination with `:hover` background-color turning light grey
+@color-tool--active:              @color-primary;
+
+// Border
+@border-base:                     @border-width-base @border-style-base @border-color-base;
+@border-dialog:                   @border-base;
+@border-menu:                     @border-base;
+@border-input-binary:             @border-width-base @border-style-base @border-color-input-binary;
+// User system messages (errors, warnings, successes, notices)
+@border-error:                    @border-width-base @border-style-base @border-color-error;
+@border-warning:                  @border-width-base @border-style-base @border-color-warning;
+@border-success:                  @border-width-base @border-style-base @border-color-success;
+@border-notice:                   @border-base;
+// Border Colors
+@border-color-base:               @omen-color-base50;
+@border-color-base--hover:        @omen-color-base50;
+@border-color-base--active:       @omen-color-base30;
+@border-color-base--focus:        @color-primary--focus;
+@border-color-base--disabled:     @omen-color-base80;
+@border-color-filled--disabled:   @color-filled--disabled;
+// Border Colors primary buttons
+@border-color-primary:            @color-primary;
+@border-color-primary--hover:     @color-primary--hover;
+@border-color-primary--active:    @color-primary--active;
+@border-color-primary--focus:     @border-color-primary;
+@border-color-destructive:        @color-destructive;
+@border-color-destructive--hover: @color-destructive--hover;
+@border-color-destructive--active: @color-destructive--active;
+@border-color-destructive--focus: @border-color-destructive;
+@border-color-inset--focus:       @color-base--inverted;
+@border-color-input--hover:       @border-color-base--active;
+@border-color-input-binary:       @border-color-base--active;
+@border-color-input-binary--active: @color-primary--active;
+@border-color-input-binary--checked: @color-primary;
+@border-color-heading:            @omen-color-base70;
+@border-color-divider:            @omen-color-base50;
+@border-color-wikitable:          rgba( 84, 89, 93, 0.3 ); // See T168029
+// Border Colors user system messages
+@border-color-error:              @color-error;
+@border-color-warning:            @omen-color-yellow50;
+@border-color-success:            @omen-color-green90;
+@border-color-notice:             @border-color-base;
+
+// Box Shadows
+// Base `box-shadow` set to `transparent` for transition purpose.
+
+@box-shadow-base--focus:          inset 0 0 0 1px @omen-color-accent50;
+@box-shadow-primary--focus:       inset 0 0 0 1px @color-primary, inset 0 0 0 2px @color-base--inverted;
+@box-shadow-destructive--focus:   inset 0 0 0 1px @color-destructive, inset 0 0 0 2px @color-base--inverted;
+@box-shadow-inset--inverted:      inset 0 0 0 1px @color-base--inverted;
+@box-shadow-filled--disabled:     inset 0 0 0 1px @color-filled--disabled;
+
+// Text Shadows
+@text-shadow-base:                0 1px 1px @color-base--inverted; // 'coined' effect

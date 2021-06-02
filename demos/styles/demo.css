@@ -793,4 +793,9 @@ FieldLayout left & right aligned */
 		margin-top: -3em;
 	}
 }
+
+body, .demo-header {
+	color:#f8f9fa;
+	background:#363636;
+}
 /* stylelint-enable selector-pseudo-element-colon-notation */
