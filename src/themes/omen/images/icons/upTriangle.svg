@@ -3,5 +3,5 @@
 	<title>
 		triangle upwards
 	</title>
-	<path d="M10 5l8 10H2z"/>
+	<path d="M10 5l8 10H2z" fill="#c5c5c5"/>
 </svg>

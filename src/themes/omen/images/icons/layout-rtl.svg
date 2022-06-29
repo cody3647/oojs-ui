@@ -3,6 +3,6 @@
 	<title>
 		layout
 	</title>
-	<path d="M1 12v7h18V1h-7v11z"/>
-	<path d="M1 1v8h8V1zm2 2h4v4H3z"/>
+	<path d="M1 12v7h18V1h-7v11z" fill="#c5c5c5"/>
+	<path d="M1 1v8h8V1zm2 2h4v4H3z" fill="#c5c5c5"/>
 </svg>

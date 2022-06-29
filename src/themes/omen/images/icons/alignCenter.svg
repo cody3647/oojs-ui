@@ -3,6 +3,6 @@
 	<title>
 		align center
 	</title>
-	<path d="M1 15h18v2H1zM1 3h18v2H1z"/>
-	<rect width="8" height="6" x="6" y="7" rx="1"/>
+	<path d="M1 15h18v2H1zM1 3h18v2H1z" fill="#c5c5c5"/>
+	<rect width="8" height="6" x="6" y="7" rx="1" fill="#c5c5c5"/>
 </svg>

@@ -3,7 +3,7 @@
 	<title>
 		ellipsis
 	</title>
-	<circle cx="10" cy="10" r="2"/>
-	<circle cx="3" cy="10" r="2"/>
-	<circle cx="17" cy="10" r="2"/>
+	<circle cx="10" cy="10" r="2" fill="#c5c5c5"/>
+	<circle cx="3" cy="10" r="2" fill="#c5c5c5"/>
+	<circle cx="17" cy="10" r="2" fill="#c5c5c5"/>
 </svg>

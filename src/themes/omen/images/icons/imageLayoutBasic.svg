@@ -3,6 +3,6 @@
 	<title>
 		image layout basic
 	</title>
-	<path d="M1 3v14h18V3zm17 13H2V4h16z"/>
-	<path d="M8.58 14h.81l3.11-4 3 4H17l-4.5-6L9 12.51 6.5 9.5 3 14h1.56l1.94-2.5z"/>
+	<path d="M1 3v14h18V3zm17 13H2V4h16z" fill="#c5c5c5"/>
+	<path d="M8.58 14h.81l3.11-4 3 4H17l-4.5-6L9 12.51 6.5 9.5 3 14h1.56l1.94-2.5z" fill="#c5c5c5"/>
 </svg>

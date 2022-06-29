@@ -181,7 +181,8 @@ module.exports = function ( grunt ) {
 				// TODO: Do this using proper DOM manipulation, not regexp magic
 				const variantSvg = originalSvg[ direction ]
 					.replace( /<\/title>/, '$&<g fill="' + variant.getColor() + '">' )
-					.replace( /<\/svg>/, '</g>$&' );
+					.replace( /<\/svg>/, '</g>$&' )
+					.replace( / fill="#c5c5c5"/g, '' );
 
 				if ( originalSvg[ direction ] === variantSvg ) {
 					uncolorizableImages.push( file[ direction ] );
@@ -208,7 +209,8 @@ module.exports = function ( grunt ) {
 					// TODO: Do this using proper DOM manipulation, not regexp magic
 					const variantSvgLang = originalSvg[ 'lang-' + lang ]
 						.replace( /<svg[^>]*>/, '$&<g fill="' + variant.getColor() + '">' )
-						.replace( /<\/svg>/, '</g>$&' );
+						.replace( /<\/svg>/, '</g>$&' )
+						.replace( / fill="#c5c5c5"/g, '' );;
 
 					if ( originalSvg[ 'lang-' + lang ] === variantSvgLang ) {
 						uncolorizableImages.push( moreLangs[ lang ] );
