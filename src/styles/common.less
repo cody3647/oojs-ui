@@ -14,63 +14,16 @@
 // in connection with CSS animations or tame `opacity` bug. Use sparely & wisely!
 // See T154460 & T182257.
 .oo-ui-force-gpu-composite-layer() {
-	-webkit-transform: translateZ( 0 );
 	transform: translateZ( 0 );
-}
-
-.oo-ui-animation( @value1, @value2: X, ... ) {
-	@value: ~`"@{arguments}".replace( /[\[\]]|\,\sX/g, '' )`; // stylelint-disable-line string-quotes
-	-webkit-animation: @value;
-	animation: @value;
-}
-
-.oo-ui-transition( @value1, @value2: X, ... ) {
-	@value: ~`"@{arguments}".replace( /[\[\]]|\,\sX/g, '' )`; // stylelint-disable-line string-quotes
-	-webkit-transition: @value;
-	transition: @value;
-}
-
-.oo-ui-transform( @string ) {
-	-webkit-transform: @string;
-	-ms-transform: @string; // IE 9 only
-	transform: @string;
-}
-
-.oo-ui-box-sizing( @type: border-box ) {
-	-moz-box-sizing: @type;
-	box-sizing: @type;
-}
-
-// `hyphens` is only useful in connection with `word-wrap` property and depends on installed
-// client browser dictionaries.
-// In sync with MediaWiki core's .hyphens() mixin.
-.oo-ui-hyphens( @value: auto ) {
-	& when ( @value = auto ) {
-		// Legacy `word-wrap`; IE 6-11, Edge 12+, Firefox 3.5+, Chrome 4+, Safari 3.1+,
-		//   Opera 11.5+, iOS 3.2+, Android 2.1+
-		// `overflow-wrap` is W3 standard, but it doesn't seem as if browser vendors
-		//   will abandon `word-wrap` (it has wider support), therefore no duplication.
-		word-wrap: break-word;
-	}
-	& when ( @value = none ) {
-		word-wrap: normal;
-	}
-
-	// CSS3 hyphenation
-	-moz-hyphens: @value;    // Firefox 6-42
-	-ms-hyphens: @value;     // IE 10-11, Edge 12+
-	hyphens: @value;         // Firefox 43+, Chrome 55+, Android 62+, UC Browser 11.8+, Samsung 6.2+
 }
 
 .oo-ui-horizontal-gradient( @startColor: #eee, @endColor: #fff, @startPos: 0, @endPos: 100% ) {
 	background-color: average( @startColor, @endColor );
-	background-image: -webkit-linear-gradient( left, @startColor @startPos, @endColor @endPos ); // Android 4.3
 	background-image: linear-gradient( to right, @startColor @startPos, @endColor @endPos );
 }
 
 .oo-ui-vertical-gradient( @startColor: #eee, @endColor: #fff, @startPos: 0, @endPos: 100% ) {
 	background-color: average( @startColor, @endColor );
-	background-image: -webkit-linear-gradient( top, @startColor @startPos, @endColor @endPos ); // Android 4.3
 	background-image: linear-gradient( to bottom, @startColor @startPos, @endColor @endPos );
 }
 
@@ -107,8 +60,8 @@
 	}
 }
 
-/* stylelint-disable selector-no-vendor-prefix */
 .oo-ui-placeholder( @rules ) {
+	/* stylelint-disable selector-no-vendor-prefix */
 	// WebKit, Blink, Edge
 	&::-webkit-input-placeholder {
 		@rules();
@@ -121,12 +74,12 @@
 	&::-moz-placeholder {
 		@rules();
 	}
+	/* stylelint-enable selector-no-vendor-prefix */
 	// W3C Standard Selectors Level 4
 	&::placeholder {
 		@rules();
 	}
 }
-/* stylelint-enable selector-no-vendor-prefix */
 
 // Screen Reader Helper Mixin
 .oo-ui-screen-reader-text() {

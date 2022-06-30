@@ -9,8 +9,6 @@
 
 .theme-oo-ui-messageDialog() {
 	&-content > .oo-ui-window-foot {
-		/* For some reason `outline` in this file is throwing warnings, but not elsewhere */
-		/* stylelint-disable-next-line plugin/no-unsupported-browser-features */
 		outline: @border-dialog; // Use `@border-dialog` here as `outline` is `border` substitute.
 	}
 
@@ -119,7 +117,6 @@
 	&-content {
 		.oo-ui-window-head,
 		.oo-ui-window-foot {
-			/* stylelint-disable-next-line plugin/no-unsupported-browser-features */
 			outline: @border-dialog-bar; // Use `@border-dialog-bar` here as `outline` is `border` substitute.
 		}
 
@@ -146,7 +143,7 @@
 	&-title {
 		font-size: @font-size-dialog-process-title;
 		font-weight: bold;
-		line-height: @size-dialog-bar--desktop / unit( @font-size-dialog-process-title );
+		line-height: ( @size-dialog-bar--desktop / unit( @font-size-dialog-process-title ) );
 	}
 
 	// ActionWidget is only ever part of ProcessDialog actions (primary, safe, other),
@@ -314,7 +311,7 @@
 			}
 
 			&-title {
-				line-height: @size-dialog-bar--mobile / unit( @font-size-dialog-process-title );
+				line-height: ( @size-dialog-bar--mobile / unit( @font-size-dialog-process-title ) );
 			}
 
 			&-content .oo-ui-window-body {
@@ -331,7 +328,10 @@
 
 			&.oo-ui-labelElement {
 				> .oo-ui-buttonElement-button {
-					padding: @padding-vertical-tool-label @padding-horizontal-base;
+					min-height: @size-dialog-bar--mobile;
+					// Vertically center text using line-height instead of vertical padding (T291142)
+					line-height: @size-dialog-bar--mobile;
+					padding: 0 @padding-horizontal-base;
 				}
 
 				&.oo-ui-iconElement {
@@ -348,13 +348,13 @@
 	&-modal > .oo-ui-dialog {
 		background-color: rgba( 255, 255, 255, 0.5 );
 		opacity: 0;
-		.oo-ui-transition( opacity @transition-dialog );
+		transition: opacity @transition-dialog;
 
 		> .oo-ui-window-frame {
 			background-color: @background-color-base;
 			opacity: 0;
-			.oo-ui-transform( scale( 0.5 ) );
-			.oo-ui-transition( all @transition-dialog );
+			transform: scale( 0.5 );
+			transition: all @transition-dialog;
 		}
 
 		&.oo-ui-window-setup {
@@ -364,7 +364,7 @@
 			> .oo-ui-window-frame {
 				// Fade frame
 				opacity: 1;
-				.oo-ui-transform( scale( 1 ) );
+				transform: scale( 1 );
 			}
 		}
 	}
@@ -373,7 +373,6 @@
 		top: 1em;
 		bottom: 1em;
 		max-height: 100%;
-		/* stylelint-disable-next-line plugin/no-unsupported-browser-features */
 		max-height: e( 'calc( 100% - 2em )' );
 		border: @border-dialog;
 		border-radius: @border-radius-base;

@@ -9,13 +9,10 @@ $loremIpsum = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, " .
 
 $demoContainer = new OOUI\PanelLayout( [
 	'expanded' => false,
-	'padded' => true,
 	'framed' => true,
 ] );
 
-$demoContainer
-	->addClasses( [ 'demo-container' ] )
-	->setAttributes( [ 'role' => 'main' ] );
+$demoContainer;
 
 $demoContainer->appendContent( new Demo\LinkedFieldsetLayout( [
 	'id' => 'demo-section-buttons',
@@ -139,15 +136,29 @@ $demoContainer->appendContent( new Demo\LinkedFieldsetLayout( [
 		),
 		new OOUI\FieldLayout(
 			new OOUI\ButtonWidget( [
+				'icon' => 'edit',
+				'label' => 'Edit',
+				'invisibleLabel' => true,
+				'title' => '',
+			] ),
+			[
+				'label' => new OOUI\HtmlSnippet(
+					'ButtonWidget (<code>\'invisibleLabel\' => true</code>, empty title)'
+				),
+				'align' => 'top'
+			]
+		),
+		new OOUI\FieldLayout(
+			new OOUI\ButtonWidget( [
 				'framed' => false,
 				'icon' => 'edit',
 				'label' => 'Edit',
 				'invisibleLabel' => true,
-				'title' => 'Icon only'
 			] ),
 			[
-				'label' => new OOUI\HtmlSnippet( 'ButtonWidget (quiet, <code>\'framed\' => false</code>, ' .
-					'icon only)' ),
+				'label' => new OOUI\HtmlSnippet(
+					'ButtonWidget (quiet, <code>\'framed\' => false, \'invisibleLabel\' => true</code>)'
+				),
 				'align' => 'top'
 			]
 		),
@@ -208,6 +219,20 @@ $demoContainer->appendContent( new Demo\LinkedFieldsetLayout( [
 			[
 				'label' => 'ButtonWidget (quiet, progressive, with ' .
 					'rel="noreferrer noopener" link attribute)',
+				'align' => 'top'
+			]
+		),
+		new OOUI\FieldLayout(
+			new OOUI\ButtonWidget( [
+				'framed' => false,
+				'flags' => [ 'progressive' ],
+				'label' => 'Documentation',
+				'href' => 'https://doc.wikimedia.org',
+				'rel' => ''
+			] ),
+			[
+				'label' => 'ButtonWidget (quiet, progressive, with ' .
+					'rel="" link attribute)',
 				'align' => 'top'
 			]
 		),
@@ -311,7 +336,6 @@ $demoContainer->appendContent( new Demo\LinkedFieldsetLayout( [
 						'label' => 'Two'
 					] ),
 					new OOUI\ButtonWidget( [
-						'indicator' => 'clear',
 						'label' => 'Three'
 					] )
 				]
@@ -1230,6 +1254,17 @@ $demoContainer->appendContent( new Demo\LinkedFieldsetLayout( [
 			] ),
 			[
 				'label' => "MessageWidget (type => 'success', icon => 'article')",
+				'align' => 'top'
+			]
+		),
+		new OOUI\FieldLayout(
+			new OOUI\MessageWidget( [
+				'type' => 'notice',
+				'label' => 'MessageWidget with close button.',
+				'showClose' => true
+			] ),
+			[
+				'label' => "MessageWidget (type => 'notice', showClose => true)",
 				'align' => 'top'
 			]
 		),

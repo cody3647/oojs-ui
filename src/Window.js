@@ -81,9 +81,18 @@ OO.ui.Window = function OoUiWindow( config ) {
 	 */
 	this.$overlay = $( '<div>' );
 	this.$content = $( '<div>' );
-
-	this.$focusTrapBefore = $( '<div>' ).prop( 'tabIndex', 0 );
-	this.$focusTrapAfter = $( '<div>' ).prop( 'tabIndex', 0 );
+	/**
+	 * Set focus traps
+	 *
+	 * It is considered best practice to trap focus in a loop within a modal dialog, even
+	 * though with 'inert' support we could allow focus to break out to the browser chrome.
+	 *
+	 * - https://www.w3.org/TR/wai-aria-practices-1.1/examples/dialog-modal/dialog.html#kbd_label
+	 * - https://allyjs.io/tutorials/accessible-dialog.html#reacting-to-kbdtabkbd-and-kbdshift-tabkbd
+	 * - https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/dialog_role#focus_management
+	 */
+	this.$focusTrapBefore = $( '<div>' ).addClass( 'oo-ui-window-focusTrap' ).prop( 'tabIndex', 0 );
+	this.$focusTrapAfter = this.$focusTrapBefore.clone();
 	this.$focusTraps = this.$focusTrapBefore.add( this.$focusTrapAfter );
 
 	// Initialization
@@ -275,11 +284,11 @@ OO.ui.Window.prototype.withoutSizeTransitions = function ( callback ) {
  * @return {number} The height of the window contents (the dialog head, body and foot) in pixels
  */
 OO.ui.Window.prototype.getContentHeight = function () {
-	var bodyHeight,
-		win = this,
+	var win = this,
 		bodyStyleObj = this.$body[ 0 ].style,
 		frameStyleObj = this.$frame[ 0 ].style;
 
+	var bodyHeight;
 	// Temporarily resize the frame so getBodyHeight() can use scrollHeight measurements.
 	// Disable transitions first, otherwise we'll get values from when the window was animating.
 	this.withoutSizeTransitions( function () {
@@ -420,6 +429,7 @@ OO.ui.Window.prototype.setManager = function ( manager ) {
 	}
 
 	this.manager = manager;
+
 	this.initialize();
 
 	return this;
@@ -463,20 +473,20 @@ OO.ui.Window.prototype.updateSize = function () {
  * To set the size of the window, use the #setSize method.
  *
  * @param {Object} dim CSS dimension properties
- * @param {string|number} [dim.width] Width
- * @param {string|number} [dim.minWidth] Minimum width
- * @param {string|number} [dim.maxWidth] Maximum width
+ * @param {string|number} [dim.width=''] Width
+ * @param {string|number} [dim.minWidth=''] Minimum width
+ * @param {string|number} [dim.maxWidth=''] Maximum width
  * @param {string|number} [dim.height] Height, omit to set based on height of contents
- * @param {string|number} [dim.minHeight] Minimum height
- * @param {string|number} [dim.maxHeight] Maximum height
+ * @param {string|number} [dim.minHeight=''] Minimum height
+ * @param {string|number} [dim.maxHeight=''] Maximum height
  * @chainable
  * @return {OO.ui.Window} The window, for chaining
  */
 OO.ui.Window.prototype.setDimensions = function ( dim ) {
-	var height,
-		win = this,
+	var win = this,
 		styleObj = this.$frame[ 0 ].style;
 
+	var height;
 	// Calculate the height we need to set using the correct width
 	if ( dim.height === undefined ) {
 		this.withoutSizeTransitions( function () {
@@ -526,6 +536,7 @@ OO.ui.Window.prototype.initialize = function () {
 
 	// Events
 	this.$element.on( 'mousedown', this.onMouseDown.bind( this ) );
+	this.$focusTraps.on( 'focus', this.onFocusTrapFocused.bind( this ) );
 
 	// Initialization
 	this.$head.addClass( 'oo-ui-window-head' );
@@ -543,8 +554,19 @@ OO.ui.Window.prototype.initialize = function () {
  * @param {jQuery.Event} event Focus event
  */
 OO.ui.Window.prototype.onFocusTrapFocused = function ( event ) {
-	var backwards = this.$focusTrapBefore.is( event.target ),
-		element = OO.ui.findFocusable( this.$content, backwards );
+	var backwards = this.$focusTrapBefore.is( event.target );
+	this.focus( backwards );
+};
+
+/**
+ * Focus the window
+ *
+ * @param {boolean} focusLast Focus the last focusable element in the window, instead of the first
+ * @chainable
+ * @return {OO.ui.Window} The window, for chaining
+ */
+OO.ui.Window.prototype.focus = function ( focusLast ) {
+	var element = OO.ui.findFocusable( this.$content, !!focusLast );
 	if ( element ) {
 		// There's a focusable element inside the content, at the front or
 		// back depending on which focus trap we hit; select it.
@@ -557,6 +579,7 @@ OO.ui.Window.prototype.onFocusTrapFocused = function ( event ) {
 		// escape into the page.
 		this.$content.trigger( 'focus' );
 	}
+	return this;
 };
 
 /**
@@ -614,9 +637,6 @@ OO.ui.Window.prototype.setup = function ( data ) {
 	var win = this;
 
 	this.toggle( true );
-
-	this.focusTrapHandler = OO.ui.bind( this.onFocusTrapFocused, this );
-	this.$focusTraps.on( 'focus', this.focusTrapHandler );
 
 	return this.getSetupProcess( data ).execute().then( function () {
 		win.updateSize();
@@ -691,7 +711,6 @@ OO.ui.Window.prototype.teardown = function ( data ) {
 		// Force redraw by asking the browser to measure the elements' widths
 		win.$element.removeClass( 'oo-ui-window-active' ).width();
 
-		win.$focusTraps.off( 'focus', win.focusTrapHandler );
 		win.toggle( false );
 	} );
 };

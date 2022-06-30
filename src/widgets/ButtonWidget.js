@@ -31,10 +31,10 @@
  * @constructor
  * @param {Object} [config] Configuration options
  * @cfg {boolean} [active=false] Whether button should be shown as active
- * @cfg {string} [href] Hyperlink to visit when the button is clicked.
- * @cfg {string} [target] The frame or window in which to open the hyperlink.
- * @cfg {boolean} [noFollow] Search engine traversal hint (default: true)
- * @cfg {string[]} [rel] Relationship attributes for the hyperlink
+ * @cfg {string} [href=null] Hyperlink to visit when the button is clicked.
+ * @cfg {string} [target=null] The frame or window in which to open the hyperlink.
+ * @cfg {boolean} [noFollow=true] Search engine traversal hint
+ * @cfg {string|string[]} [rel=[]] Relationship attributes for the hyperlink
  */
 OO.ui.ButtonWidget = function OoUiButtonWidget( config ) {
 	// Configuration initialization
@@ -78,7 +78,7 @@ OO.ui.ButtonWidget = function OoUiButtonWidget( config ) {
 	this.setActive( config.active );
 	this.setHref( config.href );
 	this.setTarget( config.target );
-	if ( config.rel ) {
+	if ( config.rel !== undefined ) {
 		this.setRel( config.rel );
 	} else {
 		this.setNoFollow( config.noFollow );
@@ -116,7 +116,7 @@ OO.ui.ButtonWidget.static.tagName = 'span';
 /**
  * Get hyperlink location.
  *
- * @return {string} Hyperlink location
+ * @return {string|null} Hyperlink location
  */
 OO.ui.ButtonWidget.prototype.getHref = function () {
 	return this.href;
@@ -125,7 +125,7 @@ OO.ui.ButtonWidget.prototype.getHref = function () {
 /**
  * Get hyperlink target.
  *
- * @return {string} Hyperlink target
+ * @return {string|null} Hyperlink target
  */
 OO.ui.ButtonWidget.prototype.getTarget = function () {
 	return this.target;
@@ -226,21 +226,18 @@ OO.ui.ButtonWidget.prototype.setTarget = function ( target ) {
  * @return {OO.ui.Widget} The widget, for chaining
  */
 OO.ui.ButtonWidget.prototype.setNoFollow = function ( noFollow ) {
-	var rel;
-
 	noFollow = typeof noFollow === 'boolean' ? noFollow : true;
 
 	if ( noFollow !== this.noFollow ) {
-		if ( !noFollow ) {
-			rel = this.rel.concat();
-			rel.splice(
-				this.rel.indexOf( 'nofollow' ),
-				1
-			);
-			this.setRel( rel );
+		var rel;
+		if ( noFollow ) {
+			rel = this.rel.concat( [ 'nofollow' ] );
 		} else {
-			this.setRel( this.rel.concat( [ 'nofollow' ] ) );
+			rel = this.rel.filter( function ( value ) {
+				return value !== 'nofollow';
+			} );
 		}
+		this.setRel( rel );
 	}
 
 	return this;
@@ -249,23 +246,18 @@ OO.ui.ButtonWidget.prototype.setNoFollow = function ( noFollow ) {
 /**
  * Set the `rel` attribute of the hyperlink.
  *
- * @param {string|string[]} rel Relationship attributes for the hyperlink
+ * @param {string|string[]} [rel] Relationship attributes for the hyperlink, omit to remove
  * @return {OO.ui.Widget} The widget, for chaining
  */
 OO.ui.ButtonWidget.prototype.setRel = function ( rel ) {
-	rel = Array.isArray( rel ) ? rel : typeof rel === 'string' ? [ rel ] : [];
-
-	if ( rel !== this.rel ) {
-		this.rel = rel;
-		// For backwards compatibility.
-		this.noFollow = rel.indexOf( 'nofollow' ) !== -1;
-
-		if ( rel.length > 0 ) {
-			this.$button.attr( 'rel', rel.join( ' ' ) );
-		} else {
-			this.$button.removeAttr( 'rel' );
-		}
+	if ( !Array.isArray( rel ) ) {
+		rel = rel ? [ rel ] : [];
 	}
+
+	this.rel = rel;
+	// For backwards compatibility.
+	this.noFollow = rel.indexOf( 'nofollow' ) !== -1;
+	this.$button.attr( 'rel', rel.join( ' ' ) || null );
 
 	return this;
 };

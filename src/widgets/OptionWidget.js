@@ -16,6 +16,7 @@
  *
  * @constructor
  * @param {Object} [config] Configuration options
+ * @cfg {boolean} [selected=false]
  */
 OO.ui.OptionWidget = function OoUiOptionWidget( config ) {
 	// Configuration initialization
@@ -40,8 +41,10 @@ OO.ui.OptionWidget = function OoUiOptionWidget( config ) {
 	this.$element
 		.data( 'oo-ui-optionWidget', this )
 		// Allow programmatic focussing (and by access key), but not tabbing
-		.attr( 'tabindex', '-1' )
-		.attr( 'role', 'option' )
+		.attr( {
+			tabindex: '-1',
+			role: 'option'
+		} )
 		.addClass( 'oo-ui-optionWidget' )
 		.append( this.$label );
 };

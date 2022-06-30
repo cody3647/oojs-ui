@@ -20,6 +20,7 @@
  * @param {OO.ui.Toolbar} toolbar
  * @param {Object} [config] Configuration options
  * @cfg {string} [header] Text to display at the top of the popup
+ * @cfg {Object} [narrowConfig] See static.narrowConfig
  */
 OO.ui.PopupToolGroup = function OoUiPopupToolGroup( toolbar, config ) {
 	// Allow passing positional parameters inside the config object
@@ -43,6 +44,7 @@ OO.ui.PopupToolGroup = function OoUiPopupToolGroup( toolbar, config ) {
 	// Don't conflict with parent method of the same name
 	this.onPopupDocumentMouseKeyUpHandler = this.onPopupDocumentMouseKeyUp.bind( this );
 	this.$handle = $( '<span>' );
+	this.narrowConfig = config.narrowConfig || this.constructor.static.narrowConfig;
 
 	// Mixin constructors
 	OO.ui.mixin.IconElement.call( this, config );
@@ -70,12 +72,14 @@ OO.ui.PopupToolGroup = function OoUiPopupToolGroup( toolbar, config ) {
 		mousedown: this.onHandleMouseKeyDown.bind( this ),
 		mouseup: this.onHandleMouseKeyUp.bind( this )
 	} );
+	this.toolbar.connect( this, {
+		resize: 'onToolbarResize'
+	} );
 
 	// Initialization
 	this.$handle
 		.addClass( 'oo-ui-popupToolGroup-handle' )
-		.attr( 'role', 'button' )
-		.attr( 'aria-expanded', 'false' )
+		.attr( { role: 'button', 'aria-expanded': 'false' } )
 		.append( this.$icon, this.$label, this.$indicator );
 	// If the pop-up should have a header, add it to the top of the toolGroup.
 	// Note: If this feature is useful for other widgets, we could abstract it into an
@@ -106,6 +110,19 @@ OO.mixinClass( OO.ui.PopupToolGroup, OO.ui.mixin.ClippableElement );
 OO.mixinClass( OO.ui.PopupToolGroup, OO.ui.mixin.FloatableElement );
 OO.mixinClass( OO.ui.PopupToolGroup, OO.ui.mixin.TabIndexedElement );
 
+/* Static properties */
+
+/**
+ * Config options to change when toolbar is in narrow mode
+ *
+ * Supports `invisibleLabel`, label` and `icon` properties.
+ *
+ * @static
+ * @inheritable
+ * @property {Object|null}
+ */
+OO.ui.PopupToolGroup.static.narrowConfig = null;
+
 /* Methods */
 
 /**
@@ -117,6 +134,39 @@ OO.ui.PopupToolGroup.prototype.setDisabled = function () {
 
 	if ( this.isDisabled() && this.isElementAttached() ) {
 		this.setActive( false );
+	}
+};
+
+/**
+ * Handle resize events from the toolbar
+ */
+OO.ui.PopupToolGroup.prototype.onToolbarResize = function () {
+	if ( !this.narrowConfig ) {
+		return;
+	}
+	if ( this.toolbar.isNarrow() ) {
+		if ( this.narrowConfig.invisibleLabel !== undefined ) {
+			this.wideInvisibleLabel = this.invisibleLabel;
+			this.setInvisibleLabel( this.narrowConfig.invisibleLabel );
+		}
+		if ( this.narrowConfig.label !== undefined ) {
+			this.wideLabel = this.label;
+			this.setLabel( this.narrowConfig.label );
+		}
+		if ( this.narrowConfig.icon !== undefined ) {
+			this.wideIcon = this.icon;
+			this.setIcon( this.narrowConfig.icon );
+		}
+	} else {
+		if ( this.wideInvisibleLabel !== undefined ) {
+			this.setInvisibleLabel( this.wideInvisibleLabel );
+		}
+		if ( this.wideLabel !== undefined ) {
+			this.setLabel( this.wideLabel );
+		}
+		if ( this.wideIcon !== undefined ) {
+			this.setIcon( this.wideIcon );
+		}
 	}
 };
 
@@ -159,19 +209,18 @@ OO.ui.PopupToolGroup.prototype.onMouseKeyUp = function ( e ) {
  * @inheritdoc
  */
 OO.ui.PopupToolGroup.prototype.onMouseKeyDown = function ( e ) {
-	var $focused, $firstFocusable, $lastFocusable;
 	// Shift-Tab on the first tool in the group jumps to the handle.
 	// Tab on the last tool in the group jumps to the next group.
 	if ( !this.isDisabled() && e.which === OO.ui.Keys.TAB ) {
 		// We can't use this.items because ListToolGroup inserts the extra fake
 		// expand/collapse tool.
-		$focused = $( document.activeElement );
-		$firstFocusable = OO.ui.findFocusable( this.$group );
+		var $focused = $( document.activeElement );
+		var $firstFocusable = OO.ui.findFocusable( this.$group );
 		if ( $focused[ 0 ] === $firstFocusable[ 0 ] && e.shiftKey ) {
 			this.$handle.trigger( 'focus' );
 			return false;
 		}
-		$lastFocusable = OO.ui.findFocusable( this.$group, true );
+		var $lastFocusable = OO.ui.findFocusable( this.$group, true );
 		if ( $focused[ 0 ] === $lastFocusable[ 0 ] && !e.shiftKey ) {
 			// Focus this group's handle and let the browser's tab handling happen
 			// (no 'return false').

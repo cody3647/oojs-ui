@@ -1,6 +1,6 @@
 Demo.static.pages.widgets = function ( demo ) {
 	// Unicode LTR marker `\u200E` is added for loremIpsum text in RTL demo, as it's not translated
-	var i, fieldsets,
+	var i,
 		loremIpsum = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, ' +
 			'sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\u200E',
 		textInputForLabel, labelForTextInput, radioSelectInputForLabel, labelForRadioSelectInput,
@@ -8,7 +8,7 @@ Demo.static.pages.widgets = function ( demo ) {
 		verticalDragItems = [],
 		verticalHandledDragItems = [],
 		$overlay = $( '<div>' ).addClass( 'demo-overlay' ).attr( 'id', 'demo-overlay' ),
-		$demo = demo.$element,
+		$demo = demo.$container,
 		fixedItemsTagMultiselectWidget = new OO.ui.TagMultiselectWidget( {
 			placeholder: 'Add tags',
 			allowArbitrary: true
@@ -67,7 +67,7 @@ Demo.static.pages.widgets = function ( demo ) {
 		input: radioSelectInputForLabel
 	} );
 
-	fieldsets = [
+	var fieldsets = [
 		new Demo.LinkedFieldsetLayout( {
 			id: 'demo-section-buttons',
 			label: 'Buttons',
@@ -200,11 +200,10 @@ Demo.static.pages.widgets = function ( demo ) {
 					new OO.ui.ButtonWidget( {
 						icon: 'edit',
 						label: 'Edit',
-						invisibleLabel: true,
-						title: 'Icon only, framed'
+						invisibleLabel: true
 					} ),
 					{
-						label: 'ButtonWidget (icon only)',
+						label: new OO.ui.HtmlSnippet( 'ButtonWidget (icon only, framed, <code>invisibleLabel: true</code>)' ),
 						align: 'top'
 					}
 				),
@@ -328,6 +327,19 @@ Demo.static.pages.widgets = function ( demo ) {
 					}
 				),
 				new OO.ui.FieldLayout(
+					new OO.ui.ButtonWidget( {
+						framed: false,
+						flags: [ 'progressive' ],
+						label: 'Documentation',
+						href: 'https://doc.wikimedia.org',
+						rel: ''
+					} ),
+					{
+						label: 'ButtonWidget (quiet, progressive, with rel="" link attribute)',
+						align: 'top'
+					}
+				),
+				new OO.ui.FieldLayout(
 					new OO.ui.ButtonInputWidget( {
 						label: 'Submit the form',
 						type: 'submit',
@@ -414,10 +426,11 @@ Demo.static.pages.widgets = function ( demo ) {
 						icon: 'next',
 						label: 'Next',
 						invisibleLabel: true,
-						value: true
+						value: true,
+						title: ''
 					} ),
 					{
-						label: 'ToggleButtonWidget (icon only, initially active)',
+						label: 'ToggleButtonWidget (icon only, initially active, empty title)',
 						align: 'top'
 					}
 				),
@@ -484,7 +497,6 @@ Demo.static.pages.widgets = function ( demo ) {
 								label: 'Two'
 							} ),
 							new OO.ui.ButtonWidget( {
-								indicator: 'clear',
 								label: 'Three'
 							} )
 						]
@@ -543,7 +555,6 @@ Demo.static.pages.widgets = function ( demo ) {
 								label: 'Two'
 							} ),
 							new OO.ui.ToggleButtonWidget( {
-								indicator: 'clear',
 								label: 'Three'
 							} )
 						],
@@ -568,7 +579,6 @@ Demo.static.pages.widgets = function ( demo ) {
 							} ),
 							new OO.ui.ButtonOptionWidget( {
 								data: 'd',
-								indicator: 'clear',
 								label: 'Three'
 							} )
 						]
@@ -593,7 +603,6 @@ Demo.static.pages.widgets = function ( demo ) {
 							} ),
 							new OO.ui.ButtonOptionWidget( {
 								data: 'd',
-								indicator: 'clear',
 								label: 'Three'
 							} )
 						]
@@ -618,7 +627,6 @@ Demo.static.pages.widgets = function ( demo ) {
 							} ),
 							new OO.ui.ButtonOptionWidget( {
 								data: 'd',
-								indicator: 'clear',
 								label: 'Three'
 							} )
 						]
@@ -788,7 +796,7 @@ Demo.static.pages.widgets = function ( demo ) {
 					new OO.ui.MultilineTextInputWidget( {
 						autosize: true,
 						icon: 'tag',
-						indicator: 'clear',
+						indicator: 'required',
 						label: 'Inline label',
 						value: 'Autosize\nAutosize\nAutosize\nAutosize'
 					} ),
@@ -821,7 +829,7 @@ Demo.static.pages.widgets = function ( demo ) {
 				new OO.ui.FieldLayout(
 					new OO.ui.TextInputWidget( {
 						icon: 'tag',
-						indicator: 'clear',
+						indicator: 'required',
 						value: 'Text input with label',
 						label: 'Inline label'
 					} ),
@@ -833,7 +841,7 @@ Demo.static.pages.widgets = function ( demo ) {
 				new OO.ui.FieldLayout(
 					new OO.ui.TextInputWidget( {
 						icon: 'tag',
-						indicator: 'clear',
+						indicator: 'required',
 						value: 'Text input with label',
 						label: 'Inline label',
 						labelPosition: 'before'
@@ -847,7 +855,7 @@ Demo.static.pages.widgets = function ( demo ) {
 					new OO.ui.TextInputWidget( {
 						value: 'Disabled',
 						icon: 'tag',
-						indicator: 'clear',
+						indicator: 'required',
 						label: 'Inline label',
 						disabled: true
 					} ),
@@ -1255,7 +1263,7 @@ Demo.static.pages.widgets = function ( demo ) {
 								new OO.ui.MenuOptionWidget( {
 									data: 'b',
 									label: 'Second',
-									indicator: 'clear'
+									indicator: 'required'
 								} ),
 								new OO.ui.MenuOptionWidget( {
 									data: 'c',
@@ -1291,7 +1299,7 @@ Demo.static.pages.widgets = function ( demo ) {
 								new OO.ui.MenuOptionWidget( {
 									data: 'b',
 									label: 'Disabled second option',
-									indicator: 'clear',
+									indicator: 'required',
 									disabled: true
 								} ),
 								new OO.ui.MenuOptionWidget( {
@@ -2193,9 +2201,8 @@ Demo.static.pages.widgets = function ( demo ) {
 						allowArbitrary: false,
 						verticalPosition: 'below',
 						options: ( function () {
-							var n,
-								options = [];
-							for ( n = 1; n <= 50; n++ ) {
+							var options = [];
+							for ( var n = 1; n <= 50; n++ ) {
 								options.push( { data: n, label: 'Label for ' + n } );
 							}
 							return options;
@@ -2262,7 +2269,7 @@ Demo.static.pages.widgets = function ( demo ) {
 								new OO.ui.MenuOptionWidget( {
 									data: 'b',
 									label: 'Second',
-									indicator: 'clear'
+									indicator: 'required'
 								} ),
 								new OO.ui.MenuOptionWidget( {
 									data: 'c',
@@ -2300,7 +2307,7 @@ Demo.static.pages.widgets = function ( demo ) {
 								new OO.ui.MenuOptionWidget( {
 									data: 'b',
 									label: 'Second',
-									indicator: 'clear'
+									indicator: 'required'
 								} ),
 								new OO.ui.MenuOptionWidget( {
 									data: 'c',
@@ -2339,7 +2346,7 @@ Demo.static.pages.widgets = function ( demo ) {
 								new OO.ui.MenuOptionWidget( {
 									data: 'b',
 									label: 'Second',
-									indicator: 'clear'
+									indicator: 'required'
 								} ),
 								new OO.ui.MenuOptionWidget( {
 									data: 'c',
@@ -2380,7 +2387,8 @@ Demo.static.pages.widgets = function ( demo ) {
 							label: 'More information',
 							$content: $( '<p>' ).text( loremIpsum ),
 							padded: true,
-							align: 'force-left'
+							align: 'force-left',
+							autoFlip: false
 						}
 					} ),
 					{
@@ -2400,7 +2408,8 @@ Demo.static.pages.widgets = function ( demo ) {
 							$content: $( '<p>' ).text( loremIpsum ),
 							padded: true,
 							align: 'force-right',
-							hideCloseButton: true
+							hideCloseButton: true,
+							autoFlip: false
 						}
 					} ),
 					{
@@ -2419,7 +2428,8 @@ Demo.static.pages.widgets = function ( demo ) {
 							label: 'More information',
 							$content: $( '<p>' ).text( loremIpsum ),
 							padded: true,
-							align: 'backwards'
+							align: 'backwards',
+							autoFlip: false
 						}
 					} ),
 					{
@@ -2438,7 +2448,8 @@ Demo.static.pages.widgets = function ( demo ) {
 							label: 'More information',
 							$content: $( '<p>' ).text( loremIpsum ),
 							padded: true,
-							align: 'forwards'
+							align: 'forwards',
+							autoFlip: false
 						}
 					} ),
 					{
@@ -2457,7 +2468,8 @@ Demo.static.pages.widgets = function ( demo ) {
 							label: 'More information',
 							$content: $( '<p>' ).text( loremIpsum ),
 							padded: true,
-							align: 'center'
+							align: 'center',
+							autoFlip: false
 						}
 					} ),
 					{
@@ -2477,7 +2489,8 @@ Demo.static.pages.widgets = function ( demo ) {
 							$content: $( '<p>' + loremIpsum + '</p><ul><li>Item one</li><li>Item two</li><li>Item three</li><li>Item four</li></ul><p>Even more text here which might well be clipped off the visible area.</p>' ),
 							$footer: $( '<p>And maybe a footer whilst we\'re at it?</p>' ),
 							padded: true,
-							align: 'forwards'
+							align: 'forwards',
+							autoFlip: false
 						}
 					} ),
 					{
@@ -2492,7 +2505,8 @@ Demo.static.pages.widgets = function ( demo ) {
 						popup: {
 							$content: $( '<p>' ).text( loremIpsum ),
 							padded: true,
-							align: 'forwards'
+							align: 'forwards',
+							autoFlip: false
 						}
 					} ),
 					{
@@ -2507,7 +2521,8 @@ Demo.static.pages.widgets = function ( demo ) {
 						popup: {
 							$content: $( '<p>' ).text( loremIpsum ),
 							padded: true,
-							align: 'backwards'
+							align: 'backwards',
+							autoFlip: false
 						}
 					} ),
 					{
@@ -2522,7 +2537,8 @@ Demo.static.pages.widgets = function ( demo ) {
 						popup: {
 							$content: $( '<p>' ).text( loremIpsum ),
 							padded: true,
-							align: 'center'
+							align: 'center',
+							autoFlip: false
 						}
 					} ),
 					{
@@ -2538,7 +2554,8 @@ Demo.static.pages.widgets = function ( demo ) {
 							$content: $( '<p>' ).text( loremIpsum ),
 							padded: true,
 							align: 'center',
-							position: 'above'
+							position: 'above',
+							autoFlip: false
 						}
 					} ),
 					{
@@ -2554,7 +2571,8 @@ Demo.static.pages.widgets = function ( demo ) {
 							$content: $( '<p>' ).text( loremIpsum ),
 							padded: true,
 							align: 'center',
-							position: 'before'
+							position: 'before',
+							autoFlip: false
 						}
 					} ),
 					{
@@ -2570,7 +2588,8 @@ Demo.static.pages.widgets = function ( demo ) {
 							$content: $( '<p>' ).text( loremIpsum ),
 							padded: true,
 							align: 'center',
-							position: 'after'
+							position: 'after',
+							autoFlip: false
 						}
 					} ),
 					{
@@ -2586,7 +2605,8 @@ Demo.static.pages.widgets = function ( demo ) {
 							$content: $( '<p>' ).text( loremIpsum ),
 							padded: true,
 							anchor: false,
-							align: 'center'
+							align: 'center',
+							autoFlip: false
 						}
 					} ),
 					{
@@ -2602,7 +2622,8 @@ Demo.static.pages.widgets = function ( demo ) {
 							$content: $( '<p>' ).text( loremIpsum ),
 							padded: true,
 							anchor: false,
-							align: 'forwards'
+							align: 'forwards',
+							autoFlip: false
 						}
 					} ),
 					{
@@ -2618,7 +2639,8 @@ Demo.static.pages.widgets = function ( demo ) {
 							$content: $( '<p>' ).text( loremIpsum ),
 							padded: true,
 							anchor: false,
-							align: 'backwards'
+							align: 'backwards',
+							autoFlip: false
 						}
 					} ),
 					{
@@ -2928,6 +2950,17 @@ Demo.static.pages.widgets = function ( demo ) {
 						label: 'MessageWidget (type: \'success\', icon: \'article\')',
 						align: 'top'
 					}
+				),
+				new OO.ui.FieldLayout(
+					new OO.ui.MessageWidget( {
+						type: 'notice',
+						label: 'MessageWidget with close button.',
+						showClose: true
+					} ),
+					{
+						label: 'MessageWidget (type: \'notice\', showClose: true)',
+						align: 'top'
+					}
 				)
 			]
 		} )
@@ -2947,8 +2980,6 @@ Demo.static.pages.widgets = function ( demo ) {
 			expanded: false,
 			framed: true
 		} ).$element
-			.addClass( 'demo-container' )
-			.attr( 'role', 'main' )
 			.append(
 				$( fieldsets.map( function ( fieldset ) { return fieldset.$element[ 0 ]; } ) )
 			)

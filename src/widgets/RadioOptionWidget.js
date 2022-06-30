@@ -10,6 +10,7 @@
  *
  * @constructor
  * @param {Object} [config] Configuration options
+ * @cfg {Mixed} [data]
  */
 OO.ui.RadioOptionWidget = function OoUiRadioOptionWidget( config ) {
 	// Configuration initialization
@@ -26,8 +27,7 @@ OO.ui.RadioOptionWidget = function OoUiRadioOptionWidget( config ) {
 	this.radio.$input.attr( 'role', 'presentation' );
 	this.$element
 		.addClass( 'oo-ui-radioOptionWidget' )
-		.attr( 'role', 'radio' )
-		.attr( 'aria-checked', 'false' )
+		.attr( { role: 'radio', 'aria-checked': 'false' } )
 		.removeAttr( 'aria-selected' )
 		.prepend( this.radio.$element );
 };
@@ -43,12 +43,6 @@ OO.inheritClass( OO.ui.RadioOptionWidget, OO.ui.OptionWidget );
  * @inheritdoc
  */
 OO.ui.RadioOptionWidget.static.highlightable = false;
-
-/**
- * @static
- * @inheritdoc
- */
-OO.ui.RadioOptionWidget.static.scrollIntoViewOnSelect = true;
 
 /**
  * @static

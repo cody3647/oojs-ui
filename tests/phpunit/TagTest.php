@@ -91,6 +91,48 @@ class TagTest extends \PHPUnit\Framework\TestCase {
 		$tag->appendContent( $aTag );
 		$this->assertEquals( [ '<a></a>', $aTag ], $content->getValue( $tag ) );
 		$tag->clearContent();
+
+		// Good practice for variable-length argument lists to support being empty as well
+		$tag->appendContent();
+		$tag->prependContent();
+	}
+
+	/**
+	 * @covers Tag::appendContent
+	 * @covers Tag::prependContent
+	 * @covers Tag::removeContent
+	 */
+	public function testVariadicContentMethods() {
+		$tag = new Tag();
+		$empty = [];
+
+		$tag->appendContent( $empty );
+		$tag->appendContent( ...$empty );
+		$tag->prependContent( $empty );
+		$tag->prependContent( ...$empty );
+		$tag->removeContent( $empty );
+		$tag->removeContent( ...$empty );
+
+		// What we really care about is that the calls above don't fail
+		$this->assertSame( '<div></div>', $tag->toString() );
+	}
+
+	/**
+	 * @covers Tag::appendContent
+	 */
+	public function testAppendContentWithArrayKeys() {
+		$tag = new Tag();
+		$this->expectError();
+		$tag->appendContent( [ 'foo' => 'bar' ] );
+	}
+
+	/**
+	 * @covers Tag::prependContent
+	 */
+	public function testPrependContentWithArrayKeys() {
+		$tag = new Tag();
+		$this->expectError();
+		$tag->prependContent( [ 'foo' => 'bar' ] );
 	}
 
 	/**

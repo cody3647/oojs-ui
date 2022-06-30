@@ -23,13 +23,14 @@
  * @constructor
  * @param {OO.ui.Toolbar} toolbar
  * @param {Object} [config] Configuration options
- * @cfg {Array|string} [include] List of tools to include in the toolgroup, see above.
- * @cfg {Array|string} [exclude] List of tools to exclude from the toolgroup, see above.
- * @cfg {Array|string} [promote] List of tools to promote to the beginning of the toolgroup,
+ * @cfg {Array|string} [include=[]] List of tools to include in the toolgroup, see above.
+ * @cfg {Array|string} [exclude=[]] List of tools to exclude from the toolgroup, see above.
+ * @cfg {Array|string} [promote=[]] List of tools to promote to the beginning of the toolgroup,
  *  see above.
- * @cfg {Array|string} [demote] List of tools to demote to the end of the toolgroup, see above.
+ * @cfg {Array|string} [demote=[]] List of tools to demote to the end of the toolgroup, see above.
  *  This setting is particularly useful when tools have been added to the toolgroup
  *  en masse (e.g., via the catch-all selector).
+ * @cfg {string} [align='before'] Alignment within the toolbar, either 'before' or 'after'.
  */
 OO.ui.ToolGroup = function OoUiToolGroup( toolbar, config ) {
 	// Allow passing positional parameters inside the config object
@@ -56,6 +57,7 @@ OO.ui.ToolGroup = function OoUiToolGroup( toolbar, config ) {
 	this.exclude = config.exclude || [];
 	this.promote = config.promote || [];
 	this.demote = config.demote || [];
+	this.align = config.align || 'before';
 	this.onDocumentMouseKeyUpHandler = this.onDocumentMouseKeyUp.bind( this );
 
 	// Events
@@ -165,11 +167,11 @@ OO.ui.ToolGroup.prototype.isDisabled = function () {
  * @inheritdoc
  */
 OO.ui.ToolGroup.prototype.updateDisabled = function () {
-	var i, item, allDisabled = true;
+	var allDisabled = true;
 
 	if ( this.constructor.static.autoDisable ) {
-		for ( i = this.items.length - 1; i >= 0; i-- ) {
-			item = this.items[ i ];
+		for ( var i = this.items.length - 1; i >= 0; i-- ) {
+			var item = this.items[ i ];
 			if ( !item.isDisabled() ) {
 				allDisabled = false;
 				break;
@@ -310,9 +312,9 @@ OO.ui.ToolGroup.prototype.onMouseOutBlur = function ( e ) {
  * @return {OO.ui.Tool|null} Tool, `null` if none was found
  */
 OO.ui.ToolGroup.prototype.findTargetTool = function ( e ) {
-	var tool,
-		$item = $( e.target ).closest( '.oo-ui-tool-link' );
+	var $item = $( e.target ).closest( '.oo-ui-tool-link' );
 
+	var tool;
 	if ( $item.length ) {
 		tool = $item.parent().data( 'oo-ui-tool' );
 	}
@@ -348,8 +350,7 @@ OO.ui.ToolGroup.prototype.getToolbar = function () {
  * Add and remove tools based on configuration.
  */
 OO.ui.ToolGroup.prototype.populate = function () {
-	var i, len, name, tool,
-		toolFactory = this.toolbar.getToolFactory(),
+	var toolFactory = this.toolbar.getToolFactory(),
 		names = {},
 		add = [],
 		remove = [],
@@ -357,8 +358,9 @@ OO.ui.ToolGroup.prototype.populate = function () {
 			this.include, this.exclude, this.promote, this.demote
 		);
 
+	var name;
 	// Build a list of needed tools
-	for ( i = 0, len = list.length; i < len; i++ ) {
+	for ( var i = 0, len = list.length; i < len; i++ ) {
 		name = list[ i ];
 		if (
 			// Tool exists
@@ -370,7 +372,7 @@ OO.ui.ToolGroup.prototype.populate = function () {
 			// before creating it, but we can't call reserveTool() yet because we haven't created
 			// the tool.
 			this.toolbar.tools[ name ] = true;
-			tool = this.tools[ name ];
+			var tool = this.tools[ name ];
 			if ( !tool ) {
 				// Auto-initialize tools on first use
 				this.tools[ name ] = tool = toolFactory.create( name, this );
@@ -409,11 +411,9 @@ OO.ui.ToolGroup.prototype.populate = function () {
  * Destroy toolgroup.
  */
 OO.ui.ToolGroup.prototype.destroy = function () {
-	var name;
-
 	this.clearItems();
 	this.toolbar.getToolFactory().disconnect( this );
-	for ( name in this.tools ) {
+	for ( var name in this.tools ) {
 		this.toolbar.releaseTool( this.tools[ name ] );
 		this.tools[ name ].disconnect( this ).destroy();
 		delete this.tools[ name ];

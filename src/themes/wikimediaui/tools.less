@@ -44,11 +44,11 @@
 }
 
 .theme-oo-ui-tool() {
-	.oo-ui-box-sizing( border-box );
+	box-sizing: border-box;
 
 	.oo-ui-tool-link {
 		position: relative;
-		.oo-ui-box-sizing( border-box );
+		box-sizing: border-box;
 		padding-top: @padding-top-tool;
 		padding-left: @padding-start-tool-icon-only;
 
@@ -80,7 +80,7 @@
 
 	&.oo-ui-widget-enabled {
 		.oo-ui-tool-link {
-			.oo-ui-transition( background-color @transition-base );
+			transition: background-color @transition-base;
 
 			&:focus {
 				outline: @border-width-base @border-style-base @border-color-base--focus;
@@ -92,12 +92,12 @@
 
 		.oo-ui-iconElement-icon {
 			opacity: @opacity-icon-base;
-			.oo-ui-transition( opacity @transition-base );
+			transition: opacity @transition-base;
 			.oo-ui-force-gpu-composite-layer();
 		}
 
 		.oo-ui-tool-title {
-			.oo-ui-transition( color @transition-base );
+			transition: color @transition-base;
 		}
 
 		&:hover {
@@ -156,7 +156,7 @@
 }
 
 .theme-oo-ui-toolGroup() {
-	.oo-ui-box-sizing( border-box );
+	box-sizing: border-box;
 
 	&.oo-ui-widget-disabled:not( .oo-ui-flaggedElement-primary ) {
 		.oo-ui-indicatorElement-indicator,
@@ -227,11 +227,26 @@
 				}
 			}
 		}
+
+		&.oo-ui-widget-disabled {
+			.oo-ui-tool-title {
+				color: @color-base--disabled;
+			}
+
+			.oo-ui-indicatorElement-indicator,
+			.oo-ui-iconElement-icon {
+				opacity: @opacity-tool--disabled;
+			}
+		}
 	}
 
-	&.oo-ui-widget-disabled,
-	&-tools .oo-ui-tool.oo-ui-widget-disabled .oo-ui-tool-title {
+	&.oo-ui-widget-disabled {
 		color: @color-base--disabled;
+
+		.oo-ui-indicatorElement-indicator,
+		.oo-ui-iconElement-icon {
+			opacity: @opacity-tool--disabled;
+		}
 	}
 }
 
@@ -291,7 +306,7 @@
 	}
 
 	&-handle {
-		.oo-ui-box-sizing( border-box );
+		box-sizing: border-box;
 
 		.oo-ui-iconElement-icon {
 			left: @start-tool-icon;
@@ -422,10 +437,7 @@
 
 	&.oo-ui-widget-enabled {
 		> .oo-ui-popupToolGroup-handle {
-			.oo-ui-transition(
-				background-color @transition-base,
-				box-shadow @transition-base
-			);
+			transition: background-color @transition-base, box-shadow @transition-base;
 
 			&:hover {
 				background-color: @background-color-tool--hover;
@@ -440,7 +452,7 @@
 			.oo-ui-iconElement-icon,
 			.oo-ui-indicatorElement-indicator {
 				opacity: @opacity-icon-base;
-				.oo-ui-transition( opacity @transition-base );
+				transition: opacity @transition-base;
 				.oo-ui-force-gpu-composite-layer();
 			}
 
@@ -471,11 +483,7 @@
 		.oo-ui-toolbar-actions & {
 			> .oo-ui-popupToolGroup-handle {
 				border-right: @border-width-base @border-style-base transparent;
-				.oo-ui-transition(
-					background-color @transition-base,
-					border-color @transition-base,
-					box-shadow @transition-base
-				);
+				transition: background-color @transition-base, border-color @transition-base, box-shadow @transition-base;
 
 				&:hover {
 					border-right-color: @background-color-tool--hover;
@@ -509,7 +517,7 @@
 	}
 
 	&-tools .oo-ui-tool.oo-ui-widget-enabled .oo-ui-tool-link:focus {
-		outline: 0;
+		outline: @outline-base--focus;
 		box-shadow: @box-shadow-popuptoolgroup-tool--focus;
 	}
 

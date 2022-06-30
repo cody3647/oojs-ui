@@ -9,13 +9,10 @@ $loremIpsum = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, " .
 
 $demoContainer = new OOUI\PanelLayout( [
 	'expanded' => false,
-	'padded' => true,
 	'framed' => true,
 ] );
 
-$demoContainer
-	->addClasses( [ 'demo-container' ] )
-	->setAttributes( [ 'role' => 'main' ] );
+$demoContainer;
 
 $demoContainer->appendContent( new Demo\LinkedFieldsetLayout( [
 	'id' => 'demo-section-fieldLayouts',

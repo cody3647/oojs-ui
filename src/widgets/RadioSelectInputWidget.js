@@ -102,10 +102,9 @@ OO.ui.RadioSelectInputWidget.prototype.onMenuSelect = function ( item ) {
  * @inheritdoc
  */
 OO.ui.RadioSelectInputWidget.prototype.setValue = function ( value ) {
-	var selected;
 	value = this.cleanUpValue( value );
 	// Only allow setting values that are actually present in the dropdown
-	selected = this.radioSelectWidget.findItemFromData( value ) ||
+	var selected = this.radioSelectWidget.findItemFromData( value ) ||
 		this.radioSelectWidget.findFirstSelectableItem();
 	this.radioSelectWidget.selectItem( selected );
 	value = selected ? selected.getData() : '';
@@ -145,7 +144,7 @@ OO.ui.RadioSelectInputWidget.prototype.setOptions = function ( options ) {
  * Set the internal list of options, used e.g. by setValue() to see which options are allowed.
  *
  * This method may be called before the parent constructor, so various properties may not be
- * intialized yet.
+ * initialized yet.
  *
  * @param {Object[]} options Array of menu options in the format `{ data: …, label: … }`
  * @private

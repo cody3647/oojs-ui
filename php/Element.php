@@ -117,7 +117,7 @@ class Element extends Tag {
 	}
 
 	/**
-	 * Toggle visiblity of an element.
+	 * Toggle visibility of an element.
 	 *
 	 * @param bool|null $show Make element visible, omit to toggle visibility
 	 * @return $this
@@ -190,7 +190,7 @@ class Element extends Tag {
 	public function getConfig( &$config ) {
 		// If there are traits, add their config
 		foreach ( $this->configCallbacks as $func ) {
-			call_user_func_array( $func, [ &$config ] );
+			$func( $config );
 		}
 
 		if ( $this->data !== null ) {

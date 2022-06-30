@@ -17,8 +17,9 @@
  *  impact the flags that the widget receives (and hence its CSS design) as well
  *  as the icon that appears. Available types:
  *  'notice', 'error', 'warning', 'success'
- * @cfg {boolean} [inline] Set the notice as an inline notice. The default
+ * @cfg {boolean} [inline=false] Set the notice as an inline notice. The default
  *  is not inline, or 'boxed' style.
+ * @cfg {boolean} [showClose] Show a close button. Can't be used with inline.
  */
 OO.ui.MessageWidget = function OoUiMessageWidget( config ) {
 	// Configuration initialization
@@ -43,9 +44,23 @@ OO.ui.MessageWidget = function OoUiMessageWidget( config ) {
 		this.setIcon( config.icon );
 	}
 
+	if ( !this.inline && config.showClose ) {
+		this.closeButton = new OO.ui.ButtonWidget( {
+			classes: [ 'oo-ui-messageWidget-close' ],
+			framed: false,
+			icon: 'close',
+			label: OO.ui.msg( 'ooui-popup-widget-close-button-aria-label' ),
+			invisibleLabel: true
+		} );
+		this.closeButton.connect( this, {
+			click: 'onCloseButtonClick'
+		} );
+		this.$element.addClass( 'oo-ui-messageWidget-showClose' );
+	}
+
 	// Build the widget
 	this.$element
-		.append( this.$icon, this.$label )
+		.append( this.$icon, this.$label, this.closeButton && this.closeButton.$element )
 		.addClass( 'oo-ui-messageWidget' );
 };
 
@@ -56,6 +71,12 @@ OO.mixinClass( OO.ui.MessageWidget, OO.ui.mixin.IconElement );
 OO.mixinClass( OO.ui.MessageWidget, OO.ui.mixin.LabelElement );
 OO.mixinClass( OO.ui.MessageWidget, OO.ui.mixin.TitledElement );
 OO.mixinClass( OO.ui.MessageWidget, OO.ui.mixin.FlaggedElement );
+
+/* Events */
+
+/**
+ * @event close
+ */
 
 /* Static Properties */
 
@@ -92,16 +113,14 @@ OO.ui.MessageWidget.prototype.setInline = function ( inline ) {
  * Set the widget type. The given type must belong to the list of
  * legal types set by OO.ui.MessageWidget.static.iconMap
  *
- * @param  {string} [type] Given type. Defaults to 'notice'
+ * @param {string} [type='notice']
  */
 OO.ui.MessageWidget.prototype.setType = function ( type ) {
-	// Validate type
-	if ( Object.keys( this.constructor.static.iconMap ).indexOf( type ) === -1 ) {
-		type = 'notice'; // Default
+	if ( !this.constructor.static.iconMap[ type ] ) {
+		type = 'notice';
 	}
 
 	if ( this.type !== type ) {
-
 		// Flags
 		this.clearFlags();
 		this.setFlags( type );
@@ -121,4 +140,15 @@ OO.ui.MessageWidget.prototype.setType = function ( type ) {
 
 		this.type = type;
 	}
+};
+
+/**
+ * Handle click events on the close button
+ *
+ * @param {jQuery} e jQuery event
+ * @fires close
+ */
+OO.ui.MessageWidget.prototype.onCloseButtonClick = function () {
+	this.toggle( false );
+	this.emit( 'close' );
 };

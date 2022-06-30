@@ -2,7 +2,7 @@
 
 .oo-ui-window {
 	&-frame {
-		.oo-ui-box-sizing( border-box );
+		box-sizing: border-box;
 	}
 
 	&-content {
@@ -36,6 +36,16 @@
 		top: 0;
 		/* @noflip */
 		left: 0;
+	}
+
+	&-focusTrap {
+		display: none;
+
+		.oo-ui-windowManager-modal &,
+		.oo-ui-windowManager-fullscreen &,
+		.oo-ui-windowManager-forceTrapFocus & {
+			display: block;
+		}
 	}
 
 	.theme-oo-ui-window();

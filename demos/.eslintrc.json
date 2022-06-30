@@ -1,9 +1,16 @@
 {
+	"root": true,
 	"extends": [
 		"../src/.eslintrc.json",
+		"wikimedia/mediawiki",
 		"wikimedia/jquery"
 	],
 	"globals": {
-		"Demo": false
+		"Demo": "writable"
+	},
+	"plugins": [ "html" ],
+	"settings": {
+		"html/indent": "+tab",
+		"html/report-bad-indent": "error"
 	}
 }

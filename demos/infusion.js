@@ -3,12 +3,11 @@
 	// Demonstrate JavaScript 'infusion' of PHP-generated widgets.
 	// Used by widgets.php.
 
-	var infuseButton, $demoMenu;
+	var infuseButton, $demoHeader;
 
 	// Helper function to get high resolution profiling data, where available.
 	function now() {
-		return ( window.performance && performance.now ) ? performance.now() :
-			Date.now ? Date.now() : new Date().getTime();
+		return ( window.performance && performance.now ) ? performance.now() : Date.now();
 	}
 
 	// Add a button to infuse everything!
@@ -35,11 +34,11 @@
 	}
 
 	// eslint-disable-next-line no-jquery/no-global-selector
-	$demoMenu = $( '.demo-menu' );
+	$demoHeader = $( '.demo-header' );
 
 	OO.ui.getViewportSpacing = function () {
 		return {
-			top: $demoMenu.outerHeight(),
+			top: $demoHeader.outerHeight(),
 			right: 0,
 			bottom: 0,
 			left: 0

@@ -279,6 +279,7 @@
  * @cfg {boolean} [actions] Add an actions section to the toolbar. Actions are commands that are
  *  included in the toolbar, but are not configured as tools. By default, actions are displayed on
  *  the right side of the toolbar.
+ *  This feature is deprecated. It is suggested to use the ToolGroup 'align' property instead.
  * @cfg {string} [position='top'] Whether the toolbar is positioned above ('top') or below
  *  ('bottom') content.
  * @cfg {jQuery} [$overlay] An overlay for the popup.
@@ -310,9 +311,11 @@ OO.ui.Toolbar = function OoUiToolbar( toolFactory, toolGroupFactory, config ) {
 	this.tools = {};
 	this.position = config.position || 'top';
 	this.$bar = $( '<div>' );
+	this.$after = $( '<div>' );
 	this.$actions = $( '<div>' );
 	this.$popups = $( '<div>' );
 	this.initialized = false;
+	this.narrow = false;
 	this.narrowThreshold = null;
 	this.onWindowResizeHandler = this.onWindowResize.bind( this );
 	this.$overlay = ( config.$overlay === true ? OO.ui.getDefaultOverlay() : config.$overlay ) ||
@@ -320,18 +323,21 @@ OO.ui.Toolbar = function OoUiToolbar( toolFactory, toolGroupFactory, config ) {
 
 	// Events
 	this.$element
-		.add( this.$bar ).add( this.$group ).add( this.$actions )
+		.add( this.$bar ).add( this.$group ).add( this.$after ).add( this.$actions )
 		.on( 'mousedown keydown', this.onPointerDown.bind( this ) );
 
 	// Initialization
+	this.$bar.addClass( 'oo-ui-toolbar-bar' );
 	this.$group.addClass( 'oo-ui-toolbar-tools' );
+	this.$after.addClass( 'oo-ui-toolbar-tools oo-ui-toolbar-after' );
+	this.$popups.addClass( 'oo-ui-toolbar-popups' );
+
+	this.$bar.append( this.$group, this.$after );
 	if ( config.actions ) {
 		this.$bar.append( this.$actions.addClass( 'oo-ui-toolbar-actions' ) );
 	}
-	this.$popups.addClass( 'oo-ui-toolbar-popups' );
-	this.$bar
-		.addClass( 'oo-ui-toolbar-bar' )
-		.append( this.$group, '<div style="clear:both"></div>' );
+	this.$bar.append( $( '<div>' ).css( 'clear', 'both' ) );
+
 	// Possible classes: oo-ui-toolbar-position-top, oo-ui-toolbar-position-bottom
 	this.$element
 		.addClass( 'oo-ui-toolbar oo-ui-toolbar-position-' + this.position )
@@ -366,6 +372,12 @@ OO.mixinClass( OO.ui.Toolbar, OO.ui.mixin.GroupElement );
  * @param {boolean} There are active toolgroups in this toolbar
  */
 
+/**
+ * @event resize
+ *
+ * Toolbar has resized to a point where narrow mode has changed
+ */
+
 /* Methods */
 
 /**
@@ -384,6 +396,19 @@ OO.ui.Toolbar.prototype.getToolFactory = function () {
  */
 OO.ui.Toolbar.prototype.getToolGroupFactory = function () {
 	return this.toolGroupFactory;
+};
+
+/**
+ * @inheritdoc {OO.ui.mixin.GroupElement}
+ */
+OO.ui.Toolbar.prototype.insertItemElements = function ( itemWidget ) {
+	// Mixin method
+	OO.ui.mixin.GroupElement.prototype.insertItemElements.apply( this, arguments );
+
+	if ( itemWidget.align === 'after' ) {
+		// Toolbar only ever appends ToolGroups to the end, so we can ignore 'index'
+		this.$after.append( itemWidget.$element );
+	}
 };
 
 /**
@@ -412,10 +437,32 @@ OO.ui.Toolbar.prototype.onPointerDown = function ( e ) {
  * @param {jQuery.Event} e Window resize event
  */
 OO.ui.Toolbar.prototype.onWindowResize = function () {
-	this.$element.add( this.$popups ).toggleClass(
-		'oo-ui-toolbar-narrow',
-		this.$bar[ 0 ].clientWidth <= this.getNarrowThreshold()
-	);
+	this.setNarrow( this.$bar[ 0 ].clientWidth <= this.getNarrowThreshold() );
+};
+
+/**
+ * Check if the toolbar is in narrow mode
+ *
+ * @return {boolean} Toolbar is in narrow mode
+ */
+OO.ui.Toolbar.prototype.isNarrow = function () {
+	return this.narrow;
+};
+
+/**
+ * Set the narrow mode flag
+ *
+ * @param {boolean} narrow Toolbar is in narrow mode
+ */
+OO.ui.Toolbar.prototype.setNarrow = function ( narrow ) {
+	if ( narrow !== this.narrow ) {
+		this.narrow = narrow;
+		this.$element.add( this.$popups ).toggleClass(
+			'oo-ui-toolbar-narrow',
+			this.narrow
+		);
+		this.emit( 'resize' );
+	}
 };
 
 /**
@@ -427,7 +474,8 @@ OO.ui.Toolbar.prototype.onWindowResize = function () {
  */
 OO.ui.Toolbar.prototype.getNarrowThreshold = function () {
 	if ( this.narrowThreshold === null ) {
-		this.narrowThreshold = this.$group[ 0 ].offsetWidth + this.$actions[ 0 ].offsetWidth;
+		this.narrowThreshold = this.$group[ 0 ].offsetWidth + this.$after[ 0 ].offsetWidth +
+			this.$actions[ 0 ].offsetWidth;
 	}
 	return this.narrowThreshold;
 };
@@ -453,25 +501,27 @@ OO.ui.Toolbar.prototype.initialize = function () {
  * within that toolgroup. Please see {@link OO.ui.ToolGroup toolgroups} for more information about
  * including tools in toolgroups.
  *
- * @param {Object.<string,Array>} groups List of toolgroup configurations
- * @param {string} [groups.name] Symbolic name for this toolgroup
- * @param {string} [groups.type] Toolgroup type, should exist in the toolgroup factory
- * @param {Array|string} [groups.include] Tools to include in the toolgroup
+ * @param {Object[]} groups List of toolgroup configurations
+ * @param {string} groups.name Symbolic name for this toolgroup
+ * @param {string} [groups.type] Toolgroup type, e.g. "bar", "list", or "menu". Should exist in the
+ *  {@link OO.ui.ToolGroupFactory} provided via the constructor. Defaults to "list" for catch-all
+ *  groups where `include='*'`, otherwise "bar".
+ * @param {Array|string} [groups.include] Tools to include in the toolgroup, or "*" for catch-all,
+ *  see {@link OO.ui.ToolFactory#extract}
  * @param {Array|string} [groups.exclude] Tools to exclude from the toolgroup
  * @param {Array|string} [groups.promote] Tools to promote to the beginning of the toolgroup
  * @param {Array|string} [groups.demote] Tools to demote to the end of the toolgroup
  */
 OO.ui.Toolbar.prototype.setup = function ( groups ) {
-	var i, len, type, toolGroup, groupConfig,
-		items = [],
-		defaultType = 'bar';
+	var defaultType = 'bar';
 
 	// Cleanup previous groups
 	this.reset();
 
+	var items = [];
 	// Build out new groups
-	for ( i = 0, len = groups.length; i < len; i++ ) {
-		groupConfig = groups[ i ];
+	for ( var i = 0, len = groups.length; i < len; i++ ) {
+		var groupConfig = groups[ i ];
 		if ( groupConfig.include === '*' ) {
 			// Apply defaults to catch-all groups
 			if ( groupConfig.type === undefined ) {
@@ -482,9 +532,9 @@ OO.ui.Toolbar.prototype.setup = function ( groups ) {
 			}
 		}
 		// Check type has been registered
-		type = this.getToolGroupFactory().lookup( groupConfig.type ) ?
+		var type = this.getToolGroupFactory().lookup( groupConfig.type ) ?
 			groupConfig.type : defaultType;
-		toolGroup = this.getToolGroupFactory().create( type, this, groupConfig );
+		var toolGroup = this.getToolGroupFactory().create( type, this, groupConfig );
 		items.push( toolGroup );
 		this.groupsByName[ groupConfig.name ] = toolGroup;
 		toolGroup.connect( this, {
@@ -528,11 +578,9 @@ OO.ui.Toolbar.prototype.getToolGroupByName = function ( name ) {
  * Remove all tools and toolgroups from the toolbar.
  */
 OO.ui.Toolbar.prototype.reset = function () {
-	var i, len;
-
 	this.groupsByName = {};
 	this.tools = {};
-	for ( i = 0, len = this.items.length; i < len; i++ ) {
+	for ( var i = 0, len = this.items.length; i < len; i++ ) {
 		this.items[ i ].destroy();
 	}
 	this.clearItems();

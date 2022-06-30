@@ -10,9 +10,10 @@
  *
  * @constructor
  * @param {Object} [config] Configuration options
- * @cfg {number} [level] Indentation level
- * @cfg {boolean} [movable] Allow modification from
+ * @cfg {number} [level=0] Indentation level
+ * @cfg {boolean} [movable=false] Allow modification from
  *  {@link OO.ui.OutlineControlsWidget outline controls}.
+ * @cfg {boolean} [removable=false]
  */
 OO.ui.OutlineOptionWidget = function OoUiOutlineOptionWidget( config ) {
 	// Configuration initialization
@@ -22,7 +23,6 @@ OO.ui.OutlineOptionWidget = function OoUiOutlineOptionWidget( config ) {
 	OO.ui.OutlineOptionWidget.super.call( this, config );
 
 	// Properties
-	this.level = 0;
 	this.movable = !!config.movable;
 	this.removable = !!config.removable;
 
@@ -97,14 +97,6 @@ OO.ui.OutlineOptionWidget.prototype.getLevel = function () {
 };
 
 /**
- * @inheritdoc
- */
-OO.ui.OutlineOptionWidget.prototype.setPressed = function ( state ) {
-	OO.ui.OutlineOptionWidget.super.prototype.setPressed.call( this, state );
-	return this;
-};
-
-/**
  * Set movability.
  *
  * Movability is used by {@link OO.ui.OutlineControlsWidget outline controls}.
@@ -135,14 +127,6 @@ OO.ui.OutlineOptionWidget.prototype.setRemovable = function ( removable ) {
 };
 
 /**
- * @inheritdoc
- */
-OO.ui.OutlineOptionWidget.prototype.setSelected = function ( state ) {
-	OO.ui.OutlineOptionWidget.super.prototype.setSelected.call( this, state );
-	return this;
-};
-
-/**
  * Set indentation level.
  *
  * @param {number} [level=0] Indentation level, in the range of [0,#maxLevel]
@@ -150,18 +134,18 @@ OO.ui.OutlineOptionWidget.prototype.setSelected = function ( state ) {
  * @return {OO.ui.Widget} The widget, for chaining
  */
 OO.ui.OutlineOptionWidget.prototype.setLevel = function ( level ) {
-	var levels = this.constructor.static.levels,
-		levelClass = this.constructor.static.levelClass,
-		i = levels;
-
-	this.level = level ? Math.max( 0, Math.min( levels - 1, level ) ) : 0;
-	while ( i-- ) {
-		if ( this.level === i ) {
-			this.$element.addClass( levelClass + i );
-		} else {
-			this.$element.removeClass( levelClass + i );
-		}
+	if ( this.level === level ) {
+		return this;
 	}
+
+	var levels = this.constructor.static.levels,
+		levelClass = this.constructor.static.levelClass;
+
+	if ( this.level !== undefined ) {
+		this.$element.removeClass( levelClass + this.level );
+	}
+	this.level = level > 0 ? Math.min( level, levels - 1 ) : 0;
+	this.$element.addClass( levelClass + this.level );
 	this.updateThemeClasses();
 
 	return this;

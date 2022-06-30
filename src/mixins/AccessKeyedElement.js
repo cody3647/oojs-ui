@@ -21,7 +21,7 @@
  * @cfg {jQuery} [$accessKeyed] The element to which the `accesskey` attribute is applied.
  *  If this config is omitted, the access key functionality is applied to $element, the
  *  element created by the class.
- * @cfg {string|Function} [accessKey] The key or a function that returns the key. If
+ * @cfg {string|Function|null} [accessKey=null] The key or a function that returns the key. If
  *  this config is omitted, no access key will be added.
  */
 OO.ui.mixin.AccessKeyedElement = function OoUiMixinAccessKeyedElement( config ) {
@@ -129,8 +129,6 @@ OO.ui.mixin.AccessKeyedElement.prototype.getAccessKey = function () {
  * @return {string}
  */
 OO.ui.mixin.AccessKeyedElement.prototype.formatTitleWithAccessKey = function ( title ) {
-	var accessKey;
-
 	if ( !this.$accessKeyed ) {
 		// Not initialized yet; the constructor will call updateTitle() which will rerun this
 		// function.
@@ -138,6 +136,7 @@ OO.ui.mixin.AccessKeyedElement.prototype.formatTitleWithAccessKey = function ( t
 	}
 	// Use jquery.accessKeyLabel if available to show modifiers, otherwise just display the
 	// single key.
+	var accessKey;
 	if ( $.fn.updateTooltipAccessKeys && $.fn.updateTooltipAccessKeys.getAccessKeyLabel ) {
 		accessKey = $.fn.updateTooltipAccessKeys.getAccessKeyLabel( this.$accessKeyed[ 0 ] );
 	} else {

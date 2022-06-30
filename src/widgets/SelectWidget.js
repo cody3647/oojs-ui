@@ -40,7 +40,7 @@
  *  Options are created with {@link OO.ui.OptionWidget OptionWidget} classes. See
  *  the [OOUI documentation on MediaWiki] [2] for examples.
  *  [2]: https://www.mediawiki.org/wiki/OOUI/Widgets/Selects_and_Options
- * @cfg {boolean} [multiselect] Allow for multiple selections
+ * @cfg {boolean} [multiselect=false] Allow for multiple selections
  */
 OO.ui.SelectWidget = function OoUiSelectWidget( config ) {
 	// Configuration initialization
@@ -80,11 +80,12 @@ OO.ui.SelectWidget = function OoUiSelectWidget( config ) {
 	// Initialization
 	this.$element
 		.addClass( 'oo-ui-selectWidget oo-ui-selectWidget-unpressed' )
-		.attr( 'role', 'listbox' );
+		.attr( {
+			role: 'listbox',
+			'aria-multiselectable': this.multiselect.toString()
+		} );
 	this.setFocusOwner( this.$element );
-	if ( Array.isArray( config.items ) ) {
-		this.addItems( config.items );
-	}
+	this.addItems( config.items || [] );
 };
 
 /* Setup */
@@ -190,7 +191,7 @@ OO.ui.SelectWidget.prototype.onFocus = function ( event ) {
 			// They can't be tabbed to, but they can be activated using access keys.
 			// OptionWidgets and focusable UI elements inside them have tabindex="-1" set.
 			item = this.findTargetItem( event );
-			if ( !( item.isHighlightable() || item.isSelectable() ) ) {
+			if ( item && !( item.isHighlightable() || item.isSelectable() ) ) {
 				// The item is disabled (weirdly, disabled items can be focussed in Firefox and IE,
 				// but not in Chrome). Do nothing (do not highlight or select anything).
 				return;
@@ -224,11 +225,9 @@ OO.ui.SelectWidget.prototype.onFocus = function ( event ) {
  * @return {undefined|boolean} False to prevent default if event is handled
  */
 OO.ui.SelectWidget.prototype.onMouseDown = function ( e ) {
-	var item;
-
 	if ( !this.isDisabled() && e.which === OO.ui.MouseButtons.LEFT ) {
 		this.togglePressed( true );
-		item = this.findTargetItem( e );
+		var item = this.findTargetItem( e );
 		if ( item && item.isSelectable() ) {
 			this.pressItem( item );
 			this.selecting = item;
@@ -247,11 +246,9 @@ OO.ui.SelectWidget.prototype.onMouseDown = function ( e ) {
  * @return {undefined|boolean} False to prevent default if event is handled
  */
 OO.ui.SelectWidget.prototype.onDocumentMouseUp = function ( e ) {
-	var item;
-
 	this.togglePressed( false );
 	if ( !this.selecting ) {
-		item = this.findTargetItem( e );
+		var item = this.findTargetItem( e );
 		if ( item && item.isSelectable() ) {
 			this.selecting = item;
 		}
@@ -275,10 +272,8 @@ OO.ui.SelectWidget.prototype.onDocumentMouseUp = function ( e ) {
  * @param {MouseEvent} e Mouse move event
  */
 OO.ui.SelectWidget.prototype.onDocumentMouseMove = function ( e ) {
-	var item;
-
 	if ( !this.isDisabled() && this.pressed ) {
-		item = this.findTargetItem( e );
+		var item = this.findTargetItem( e );
 		if ( item && item !== this.selecting && item.isSelectable() ) {
 			this.pressItem( item );
 			this.selecting = item;
@@ -294,12 +289,11 @@ OO.ui.SelectWidget.prototype.onDocumentMouseMove = function ( e ) {
  * @return {undefined|boolean} False to prevent default if event is handled
  */
 OO.ui.SelectWidget.prototype.onMouseOver = function ( e ) {
-	var item;
 	if ( this.blockMouseOverEvents ) {
 		return;
 	}
 	if ( !this.isDisabled() ) {
-		item = this.findTargetItem( e );
+		var item = this.findTargetItem( e );
 		this.highlightItem( item && item.isHighlightable() ? item : null );
 	}
 	return false;
@@ -326,14 +320,14 @@ OO.ui.SelectWidget.prototype.onMouseLeave = function () {
  * @param {KeyboardEvent} e Key down event
  */
 OO.ui.SelectWidget.prototype.onDocumentKeyDown = function ( e ) {
-	var nextItem,
-		handled = false,
+	var handled = false,
 		selected = this.findSelectedItems(),
 		currentItem = this.findHighlightedItem() || (
 			Array.isArray( selected ) ? selected[ 0 ] : selected
 		),
 		firstItem = this.getItems()[ 0 ];
 
+	var nextItem;
 	if ( !this.isDisabled() && this.isVisible() ) {
 		switch ( e.keyCode ) {
 			case OO.ui.Keys.ENTER:
@@ -441,30 +435,25 @@ OO.ui.SelectWidget.prototype.clearKeyPressBuffer = function () {
  * @return {undefined|boolean} False to prevent default if event is handled
  */
 OO.ui.SelectWidget.prototype.onDocumentKeyPress = function ( e ) {
-	var c, filter, item, selected;
-
 	if ( !e.charCode ) {
 		if ( e.keyCode === OO.ui.Keys.BACKSPACE && this.keyPressBuffer !== '' ) {
-			this.keyPressBuffer = this.keyPressBuffer.substr( 0, this.keyPressBuffer.length - 1 );
+			this.keyPressBuffer = this.keyPressBuffer.slice( 0, this.keyPressBuffer.length - 1 );
 			return false;
 		}
 		return;
 	}
+
 	// eslint-disable-next-line es/no-string-fromcodepoint
-	if ( String.fromCodePoint ) {
-		// eslint-disable-next-line es/no-string-fromcodepoint
-		c = String.fromCodePoint( e.charCode );
-	} else {
-		c = String.fromCharCode( e.charCode );
-	}
+	var c = String.fromCodePoint ? String.fromCodePoint( e.charCode ) :
+		String.fromCharCode( e.charCode );
 
 	if ( this.keyPressBufferTimer ) {
 		clearTimeout( this.keyPressBufferTimer );
 	}
 	this.keyPressBufferTimer = setTimeout( this.clearKeyPressBuffer.bind( this ), 1500 );
 
-	selected = this.findSelectedItems();
-	item = this.findHighlightedItem() || (
+	var selected = this.findSelectedItems();
+	var item = this.findHighlightedItem() || (
 		Array.isArray( selected ) ? selected[ 0 ] : selected
 	);
 
@@ -478,7 +467,7 @@ OO.ui.SelectWidget.prototype.onDocumentKeyPress = function ( e ) {
 		this.keyPressBuffer += c;
 	}
 
-	filter = this.getItemMatcher( this.keyPressBuffer, false );
+	var filter = this.getItemMatcher( this.keyPressBuffer, false );
 	if ( !item || !filter( item ) ) {
 		item = this.findRelativeSelectableItem( item, 1, filter );
 	}
@@ -620,9 +609,7 @@ OO.ui.SelectWidget.prototype.findSelectedItem = function () {
  * @return {OO.ui.OptionWidget|null} Highlighted item, `null` if no item is highlighted
  */
 OO.ui.SelectWidget.prototype.findHighlightedItem = function () {
-	var i, len;
-
-	for ( i = 0, len = this.items.length; i < len; i++ ) {
+	for ( var i = 0; i < this.items.length; i++ ) {
 		if ( this.items[ i ].isHighlighted() ) {
 			return this.items[ i ];
 		}
@@ -661,16 +648,25 @@ OO.ui.SelectWidget.prototype.togglePressed = function ( pressed ) {
  * @return {OO.ui.Widget} The widget, for chaining
  */
 OO.ui.SelectWidget.prototype.highlightItem = function ( item ) {
-	var i, len, highlighted,
-		changed = false;
+	if ( item && item.isHighlighted() ) {
+		return this;
+	}
 
-	for ( i = 0, len = this.items.length; i < len; i++ ) {
-		highlighted = this.items[ i ] === item;
+	var changed = false;
+
+	for ( var i = 0; i < this.items.length; i++ ) {
+		var highlighted = this.items[ i ] === item;
 		if ( this.items[ i ].isHighlighted() !== highlighted ) {
 			this.items[ i ].setHighlighted( highlighted );
-			changed = true;
+			if ( changed ) {
+				// This was the second change; there can only be two, a set and an unset
+				break;
+			}
+			// Un-highlighting can't fail, but highlighting can
+			changed = !highlighted || this.items[ i ].isHighlighted();
 		}
 	}
+
 	if ( changed ) {
 		if ( item ) {
 			this.$focusOwner.attr( 'aria-activedescendant', item.getElementId() );
@@ -691,10 +687,10 @@ OO.ui.SelectWidget.prototype.highlightItem = function ( item ) {
  * @return {OO.ui.Element|null} Item with equivalent label, `null` if none exists
  */
 OO.ui.SelectWidget.prototype.getItemFromLabel = function ( label, prefix ) {
-	var i, item, found,
-		len = this.items.length,
+	var len = this.items.length,
 		filter = this.getItemMatcher( label, 'exact' );
 
+	var i, item;
 	for ( i = 0; i < len; i++ ) {
 		item = this.items[ i ];
 		if ( item instanceof OO.ui.OptionWidget && item.isSelectable() && filter( item ) ) {
@@ -703,7 +699,7 @@ OO.ui.SelectWidget.prototype.getItemFromLabel = function ( label, prefix ) {
 	}
 
 	if ( prefix ) {
-		found = null;
+		var found = null;
 		filter = this.getItemMatcher( label, 'prefix' );
 		for ( i = 0; i < len; i++ ) {
 			item = this.items[ i ];
@@ -793,21 +789,31 @@ OO.ui.SelectWidget.prototype.unselectItem = function ( unselectedItem ) {
  * @return {OO.ui.Widget} The widget, for chaining
  */
 OO.ui.SelectWidget.prototype.selectItem = function ( item ) {
-	var i, len, selected,
-		changed = false;
-
-	if ( this.multiselect && item ) {
-		// Select the item directly
-		item.setSelected( true );
-	} else {
-		for ( i = 0, len = this.items.length; i < len; i++ ) {
-			selected = this.items[ i ] === item;
-			if ( this.items[ i ].isSelected() !== selected ) {
-				this.items[ i ].setSelected( selected );
-				changed = true;
-			}
+	if ( item ) {
+		if ( item.isSelected() ) {
+			return this;
+		} else if ( this.multiselect ) {
+			// We don't care about the state of the other items when multiselect is allowed
+			item.setSelected( true );
+			return this;
 		}
 	}
+
+	var changed = false;
+
+	for ( var i = 0; i < this.items.length; i++ ) {
+		var selected = this.items[ i ] === item;
+		if ( this.items[ i ].isSelected() !== selected ) {
+			this.items[ i ].setSelected( selected );
+			if ( changed && !this.multiselect ) {
+				// This was the second change; there can only be two, a set and an unset
+				break;
+			}
+			// Un-selecting can't fail, but selecting can
+			changed = !selected || this.items[ i ].isSelected();
+		}
+	}
+
 	if ( changed ) {
 		// TODO: When should a non-highlightable element be selected?
 		if ( item && !item.constructor.static.highlightable ) {
@@ -836,16 +842,25 @@ OO.ui.SelectWidget.prototype.selectItem = function ( item ) {
  * @return {OO.ui.Widget} The widget, for chaining
  */
 OO.ui.SelectWidget.prototype.pressItem = function ( item ) {
-	var i, len, pressed,
-		changed = false;
+	if ( item && item.isPressed() ) {
+		return this;
+	}
 
-	for ( i = 0, len = this.items.length; i < len; i++ ) {
-		pressed = this.items[ i ] === item;
+	var changed = false;
+
+	for ( var i = 0; i < this.items.length; i++ ) {
+		var pressed = this.items[ i ] === item;
 		if ( this.items[ i ].isPressed() !== pressed ) {
 			this.items[ i ].setPressed( pressed );
-			changed = true;
+			if ( changed ) {
+				// This was the second change; there can only be two, a set and an unset
+				break;
+			}
+			// Un-pressing can't fail, but pressing can
+			changed = !pressed || this.items[ i ].isPressed();
 		}
 	}
+
 	if ( changed ) {
 		this.emit( 'press', item );
 	}
@@ -896,12 +911,12 @@ OO.ui.SelectWidget.prototype.chooseItem = function ( item ) {
  * @return {OO.ui.OptionWidget|null} Item at position, `null` if there are no items in the select
  */
 OO.ui.SelectWidget.prototype.findRelativeSelectableItem = function ( item, direction, filter ) {
-	var currentIndex, nextIndex, i,
-		increase = direction > 0 ? 1 : -1,
+	var increase = direction > 0 ? 1 : -1,
 		len = this.items.length;
 
+	var nextIndex;
 	if ( item instanceof OO.ui.OptionWidget ) {
-		currentIndex = this.items.indexOf( item );
+		var currentIndex = this.items.indexOf( item );
 		nextIndex = ( currentIndex + increase + len ) % len;
 	} else {
 		// If no item is selected and moving forward, start at the beginning.
@@ -909,7 +924,7 @@ OO.ui.SelectWidget.prototype.findRelativeSelectableItem = function ( item, direc
 		nextIndex = direction > 0 ? 0 : len - 1;
 	}
 
-	for ( i = 0; i < len; i++ ) {
+	for ( var i = 0; i < len; i++ ) {
 		item = this.items[ nextIndex ];
 		if (
 			item instanceof OO.ui.OptionWidget && item.isSelectable() &&
@@ -936,13 +951,17 @@ OO.ui.SelectWidget.prototype.findFirstSelectableItem = function () {
  * Add an array of options to the select. Optionally, an index number can be used to
  * specify an insertion point.
  *
- * @param {OO.ui.OptionWidget[]} items Items to add
+ * @param {OO.ui.OptionWidget[]} [items] Options to add
  * @param {number} [index] Index to insert items after
  * @fires add
  * @chainable
  * @return {OO.ui.Widget} The widget, for chaining
  */
 OO.ui.SelectWidget.prototype.addItems = function ( items, index ) {
+	if ( !items || !items.length ) {
+		return this;
+	}
+
 	// Mixin method
 	OO.ui.mixin.GroupWidget.prototype.addItems.call( this, items, index );
 
@@ -963,11 +982,9 @@ OO.ui.SelectWidget.prototype.addItems = function ( items, index ) {
  * @return {OO.ui.Widget} The widget, for chaining
  */
 OO.ui.SelectWidget.prototype.removeItems = function ( items ) {
-	var i, len, item;
-
 	// Deselect items being removed
-	for ( i = 0, len = items.length; i < len; i++ ) {
-		item = items[ i ];
+	for ( var i = 0; i < items.length; i++ ) {
+		var item = items[ i ];
 		if ( item.isSelected() ) {
 			this.selectItem( null );
 		}

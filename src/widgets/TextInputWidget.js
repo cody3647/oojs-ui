@@ -28,7 +28,7 @@
  * @constructor
  * @param {Object} [config] Configuration options
  * @cfg {string} [type='text'] The value of the HTML `type` attribute: 'text', 'password'
- *  'email', 'url' or 'number'.
+ *  'email', 'url' or 'number'. Subclasses might support other types.
  * @cfg {string} [placeholder] Placeholder text
  * @cfg {boolean} [autofocus=false] Use an HTML `autofocus` attribute to
  *  instruct the browser to focus this widget.
@@ -53,9 +53,9 @@
 OO.ui.TextInputWidget = function OoUiTextInputWidget( config ) {
 	// Configuration initialization
 	config = $.extend( {
-		type: 'text',
 		labelPosition: 'after'
 	}, config );
+	config.type = this.getSaneType( config );
 	if ( config.autocomplete === false ) {
 		config.autocomplete = 'off';
 	} else if ( config.autocomplete === true ) {
@@ -74,7 +74,7 @@ OO.ui.TextInputWidget = function OoUiTextInputWidget( config ) {
 	OO.ui.mixin.RequiredElement.call( this, config );
 
 	// Properties
-	this.type = this.getSaneType( config );
+	this.type = config.type;
 	this.readOnly = false;
 	this.validate = null;
 	this.scrollWidth = null;
@@ -95,7 +95,7 @@ OO.ui.TextInputWidget = function OoUiTextInputWidget( config ) {
 
 	// Initialization
 	this.$element
-		.addClass( 'oo-ui-textInputWidget oo-ui-textInputWidget-type-' + this.type )
+		.addClass( 'oo-ui-textInputWidget oo-ui-textInputWidget-type-' + config.type )
 		.append( this.$icon, this.$indicator );
 	this.setReadOnly( !!config.readOnly );
 	if ( config.placeholder !== undefined ) {
@@ -162,7 +162,7 @@ OO.ui.TextInputWidget.static.validationPatterns = {
 /* Methods */
 
 /**
- * Handle icon mouse down events.
+ * Focus the input element when clicking on the icon.
  *
  * @private
  * @param {jQuery.Event} e Mouse down event
@@ -176,7 +176,10 @@ OO.ui.TextInputWidget.prototype.onIconMouseDown = function ( e ) {
 };
 
 /**
- * Handle indicator mouse down events.
+ * Focus the input element when clicking on the indicator. This default implementation is
+ * effectively only suitable for the 'required' indicator. If you are looking for functional 'clear'
+ * or 'down' indicators, you might want to use the {@link OO.ui.SearchInputWidget SearchInputWidget}
+ * or {@link OO.ui.ComboBoxInputWidget ComboBoxInputWidget} subclasses.
  *
  * @private
  * @param {jQuery.Event} e Mouse down event
@@ -279,60 +282,55 @@ OO.ui.TextInputWidget.prototype.setReadOnly = function ( state ) {
  * first time that the element gets attached to the documented.
  */
 OO.ui.TextInputWidget.prototype.installParentChangeDetector = function () {
-	var mutationObserver, onRemove, topmostNode, fakeParentNode,
-		MutationObserver = window.MutationObserver ||
+	var MutationObserver = window.MutationObserver ||
 			window.WebKitMutationObserver ||
-			window.MozMutationObserver,
-		widget = this;
+			window.MozMutationObserver;
 
-	if ( MutationObserver ) {
-		// The new way. If only it wasn't so ugly.
+	if ( !MutationObserver || this.isElementAttached() ) {
+		// Widget is attached already, do nothing. This breaks the functionality of this
+		// function when the widget is detached and reattached. Alas, doing this correctly with
+		// MutationObserver would require observation of the whole document, which would hurt
+		// performance of other, more important code.
+		return;
+	}
 
-		if ( this.isElementAttached() ) {
-			// Widget is attached already, do nothing. This breaks the functionality of this
-			// function when the widget is detached and reattached. Alas, doing this correctly with
-			// MutationObserver would require observation of the whole document, which would hurt
-			// performance of other, more important code.
-			return;
-		}
-
-		// Find topmost node in the tree
+	var widget = this,
 		topmostNode = this.$element[ 0 ];
-		while ( topmostNode.parentNode ) {
-			topmostNode = topmostNode.parentNode;
-		}
+	while ( topmostNode.parentNode ) {
+		topmostNode = topmostNode.parentNode;
+	}
 
-		// We have no way to detect the $element being attached somewhere without observing the
-		// entire DOM with subtree modifications, which would hurt performance. So we cheat: we hook
-		// to the parent node of $element, and instead detect when $element is removed from it (and
-		// thus probably attached somewhere else). If there is no parent, we create a "fake" one. If
-		// it doesn't get attached, we end up back here and create the parent.
-		mutationObserver = new MutationObserver( function ( mutations ) {
-			var i, j, removedNodes;
-			for ( i = 0; i < mutations.length; i++ ) {
-				removedNodes = mutations[ i ].removedNodes;
-				for ( j = 0; j < removedNodes.length; j++ ) {
-					if ( removedNodes[ j ] === topmostNode ) {
-						setTimeout( onRemove, 0 );
-						return;
-					}
+	var onRemove;
+	// We have no way to detect the $element being attached somewhere without observing the
+	// entire DOM with subtree modifications, which would hurt performance. So we cheat: we hook
+	// to the parent node of $element, and instead detect when $element is removed from it (and
+	// thus probably attached somewhere else). If there is no parent, we create a "fake" one. If
+	// it doesn't get attached, we end up back here and create the parent.
+	var mutationObserver = new MutationObserver( function ( mutations ) {
+		for ( var i = 0; i < mutations.length; i++ ) {
+			var removedNodes = mutations[ i ].removedNodes;
+			for ( var j = 0; j < removedNodes.length; j++ ) {
+				if ( removedNodes[ j ] === topmostNode ) {
+					setTimeout( onRemove, 0 );
+					return;
 				}
 			}
-		} );
+		}
+	} );
 
-		onRemove = function () {
-			// If the node was attached somewhere else, report it
-			if ( widget.isElementAttached() ) {
-				widget.onElementAttach();
-			}
-			mutationObserver.disconnect();
-			widget.installParentChangeDetector();
-		};
+	onRemove = function () {
+		// If the node was attached somewhere else, report it
+		if ( widget.isElementAttached() ) {
+			widget.onElementAttach();
+		}
+		mutationObserver.disconnect();
+		widget.installParentChangeDetector();
+	};
 
-		// Create a fake parent and observe it
-		fakeParentNode = $( '<div>' ).append( topmostNode )[ 0 ];
-		mutationObserver.observe( fakeParentNode, { childList: true } );
-	}
+	// Create a fake parent and observe it
+	var fakeParentNode = document.createElement( 'div' );
+	fakeParentNode.appendChild( topmostNode );
+	mutationObserver.observe( fakeParentNode, { childList: true } );
 };
 
 /**
@@ -340,20 +338,21 @@ OO.ui.TextInputWidget.prototype.installParentChangeDetector = function () {
  * @protected
  */
 OO.ui.TextInputWidget.prototype.getInputElement = function ( config ) {
-	if ( this.getSaneType( config ) === 'number' ) {
-		return $( '<input>' )
-			.attr( 'step', 'any' )
-			.attr( 'type', 'number' );
-	} else {
-		return $( '<input>' ).attr( 'type', this.getSaneType( config ) );
+	var $input = $( '<input>' ).attr( 'type', config.type );
+
+	if ( config.type === 'number' ) {
+		$input.attr( 'step', 'any' );
 	}
+
+	return $input;
 };
 
 /**
- * Get sanitized value for 'type' for given config.
+ * Get sanitized value for 'type' for given config. Subclasses might support other types.
  *
  * @param {Object} config Configuration options
- * @return {string|null}
+ * @param {string} [config.type='text']
+ * @return {string}
  * @protected
  */
 OO.ui.TextInputWidget.prototype.getSaneType = function ( config ) {
@@ -371,19 +370,18 @@ OO.ui.TextInputWidget.prototype.getSaneType = function ( config ) {
  * Focus the input and select a specified range within the text.
  *
  * @param {number} from Select from offset
- * @param {number} [to] Select to offset, defaults to from
+ * @param {number} [to=from] Select to offset
  * @chainable
  * @return {OO.ui.Widget} The widget, for chaining
  */
 OO.ui.TextInputWidget.prototype.selectRange = function ( from, to ) {
-	var isBackwards, start, end,
-		input = this.$input[ 0 ];
+	var input = this.$input[ 0 ];
 
 	to = to || from;
 
-	isBackwards = to < from;
-	start = isBackwards ? to : from;
-	end = isBackwards ? from : to;
+	var isBackwards = to < from,
+		start = isBackwards ? to : from,
+		end = isBackwards ? from : to;
 
 	this.focus();
 
@@ -467,12 +465,10 @@ OO.ui.TextInputWidget.prototype.moveCursorToEnd = function () {
  * @return {OO.ui.Widget} The widget, for chaining
  */
 OO.ui.TextInputWidget.prototype.insertContent = function ( content ) {
-	var start, end,
+	var value = this.getValue(),
 		range = this.getRange(),
-		value = this.getValue();
-
-	start = Math.min( range.from, range.to );
-	end = Math.max( range.from, range.to );
+		start = Math.min( range.from, range.to ),
+		end = Math.max( range.from, range.to );
 
 	this.setValue( value.slice( 0, start ) + content + value.slice( end ) );
 	this.selectRange( start + content.length );
@@ -488,12 +484,10 @@ OO.ui.TextInputWidget.prototype.insertContent = function ( content ) {
  * @return {OO.ui.Widget} The widget, for chaining
  */
 OO.ui.TextInputWidget.prototype.encapsulateContent = function ( pre, post ) {
-	var start, end,
+	var offset = pre.length,
 		range = this.getRange(),
-		offset = pre.length;
-
-	start = Math.min( range.from, range.to );
-	end = Math.max( range.from, range.to );
+		start = Math.min( range.from, range.to ),
+		end = Math.max( range.from, range.to );
 
 	this.selectRange( start ).insertContent( pre );
 	this.selectRange( offset + end ).insertContent( post );
@@ -513,11 +507,9 @@ OO.ui.TextInputWidget.prototype.encapsulateContent = function ( pre, post ) {
  *  of a pattern (either ‘integer’ or ‘non-empty’) defined by the class.
  */
 OO.ui.TextInputWidget.prototype.setValidation = function ( validate ) {
-	if ( validate instanceof RegExp || validate instanceof Function ) {
-		this.validate = validate;
-	} else {
-		this.validate = this.constructor.static.validationPatterns[ validate ] || /.*/;
-	}
+	this.validate = validate instanceof RegExp || validate instanceof Function ?
+		validate :
+		this.constructor.static.validationPatterns[ validate ];
 };
 
 /**
@@ -556,37 +548,35 @@ OO.ui.TextInputWidget.prototype.setValidityFlag = function ( isValid ) {
  * @return {jQuery.Promise} A promise that resolves if the value is valid, rejects if not.
  */
 OO.ui.TextInputWidget.prototype.getValidity = function () {
-	var result;
-
 	function rejectOrResolve( valid ) {
-		if ( valid ) {
-			return $.Deferred().resolve().promise();
-		} else {
-			return $.Deferred().reject().promise();
-		}
+		var deferred = $.Deferred(),
+			promise = valid ? deferred.resolve() : deferred.reject();
+		return promise.promise();
 	}
 
 	// Check browser validity and reject if it is invalid
-	if (
-		this.$input[ 0 ].checkValidity !== undefined &&
-		this.$input[ 0 ].checkValidity() === false
-	) {
+	if ( this.$input[ 0 ].checkValidity && this.$input[ 0 ].checkValidity() === false ) {
 		return rejectOrResolve( false );
 	}
 
+	if ( !this.validate ) {
+		return rejectOrResolve( true );
+	}
+
 	// Run our checks if the browser thinks the field is valid
+	var result;
 	if ( this.validate instanceof Function ) {
 		result = this.validate( this.getValue() );
 		if ( result && typeof result.promise === 'function' ) {
 			return result.promise().then( function ( valid ) {
 				return rejectOrResolve( valid );
 			} );
-		} else {
-			return rejectOrResolve( result );
 		}
 	} else {
-		return rejectOrResolve( this.getValue().match( this.validate ) );
+		// The only other type we accept is a RegExp, see #setValidation
+		result = this.validate.test( this.getValue() );
 	}
+	return rejectOrResolve( result );
 };
 
 /**
@@ -637,14 +627,12 @@ OO.ui.TextInputWidget.prototype.updatePosition = function () {
  * @return {OO.ui.Widget} The widget, for chaining
  */
 OO.ui.TextInputWidget.prototype.positionLabel = function () {
-	var after, rtl, property, newCss;
-
 	if ( this.isWaitingToBeAttached ) {
 		// #onElementAttach will be called soon, which calls this method
 		return this;
 	}
 
-	newCss = {
+	var newCss = {
 		'padding-right': '',
 		'padding-left': ''
 	};
@@ -658,9 +646,9 @@ OO.ui.TextInputWidget.prototype.positionLabel = function () {
 		return;
 	}
 
-	after = this.labelPosition === 'after';
-	rtl = this.$element.css( 'direction' ) === 'rtl';
-	property = after === rtl ? 'padding-left' : 'padding-right';
+	var after = this.labelPosition === 'after',
+		rtl = this.$element.css( 'direction' ) === 'rtl',
+		property = after === rtl ? 'padding-left' : 'padding-right';
 
 	newCss[ property ] = this.$label.outerWidth( true ) + ( after ? this.scrollWidth : 0 );
 	// We have to clear the padding on the other side, in case the element direction changed

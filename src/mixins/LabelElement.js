@@ -16,7 +16,7 @@
  *  specified as a plaintext string, a jQuery selection of elements, or a function that will
  *  produce a string in the future. See the [OOUI documentation on MediaWiki] [2] for examples.
  *  [2]: https://www.mediawiki.org/wiki/OOUI/Widgets/Icons,_Indicators,_and_Labels#Labels
- * @cfg {boolean} [invisibleLabel] Whether the label should be visually hidden (but still
+ * @cfg {boolean} [invisibleLabel=false] Whether the label should be visually hidden (but still
  *  accessible to screen-readers).
  */
 OO.ui.mixin.LabelElement = function OoUiMixinLabelElement( config ) {
@@ -26,7 +26,7 @@ OO.ui.mixin.LabelElement = function OoUiMixinLabelElement( config ) {
 	// Properties
 	this.$label = null;
 	this.label = null;
-	this.invisibleLabel = null;
+	this.invisibleLabel = false;
 
 	// Initialization
 	this.setLabel( config.label || this.constructor.static.label );
@@ -42,7 +42,6 @@ OO.initClass( OO.ui.mixin.LabelElement );
 
 /**
  * @event labelChange
- * @param {string} value
  */
 
 /* Static Properties */
@@ -71,8 +70,7 @@ OO.ui.mixin.LabelElement.static.label = null;
  *  sub-string wrapped in highlighted span
  */
 OO.ui.mixin.LabelElement.static.highlightQuery = function ( text, query, compare, combineMarks ) {
-	var i, tLen, qLen,
-		offset = -1,
+	var offset = -1,
 		$result = $( '<span>' ),
 		comboLength = 0,
 		comboMarks = '',
@@ -80,9 +78,9 @@ OO.ui.mixin.LabelElement.static.highlightQuery = function ( text, query, compare
 		comboMatch;
 
 	if ( compare ) {
-		tLen = text.length;
-		qLen = query.length;
-		for ( i = 0; offset === -1 && i <= tLen - qLen; i++ ) {
+		var tLen = text.length;
+		var qLen = query.length;
+		for ( var i = 0; offset === -1 && i <= tLen - qLen; i++ ) {
 			if ( compare( query, text.slice( i, i + qLen ) ) === 0 ) {
 				offset = i;
 			}
@@ -174,10 +172,9 @@ OO.ui.mixin.LabelElement.prototype.setLabel = function ( label ) {
 			this.setLabelContent( label );
 		}
 		this.label = label;
+		this.$element.toggleClass( 'oo-ui-labelElement', !!this.label && !this.invisibleLabel );
 		this.emit( 'labelChange' );
 	}
-
-	this.$element.toggleClass( 'oo-ui-labelElement', !!this.label && !this.invisibleLabel );
 
 	return this;
 };
@@ -194,12 +191,11 @@ OO.ui.mixin.LabelElement.prototype.setInvisibleLabel = function ( invisibleLabel
 
 	if ( this.invisibleLabel !== invisibleLabel ) {
 		this.invisibleLabel = invisibleLabel;
+		this.$label.toggleClass( 'oo-ui-labelElement-invisible', this.invisibleLabel );
+		// Pretend that there is no label, a lot of CSS has been written with this assumption
+		this.$element.toggleClass( 'oo-ui-labelElement', !!this.label && !this.invisibleLabel );
 		this.emit( 'labelChange' );
 	}
-
-	this.$label.toggleClass( 'oo-ui-labelElement-invisible', this.invisibleLabel );
-	// Pretend that there is no label, a lot of CSS has been written with this assumption
-	this.$element.toggleClass( 'oo-ui-labelElement', !!this.label && !this.invisibleLabel );
 
 	return this;
 };

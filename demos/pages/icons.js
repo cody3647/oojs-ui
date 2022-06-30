@@ -1,267 +1,33 @@
 Demo.static.pages.icons = function ( demo ) {
-	var selector,
-		icons = {
-			movement: [
-				'arrowPrevious',
-				'arrowNext',
-				'downTriangle',
-				'upTriangle',
-				'first',
-				'previous',
-				'next',
-				'last',
-				'expand',
-				'collapse',
-				'doubleChevronStart',
-				'doubleChevronEnd',
-				'move',
-				'draggable'
-			],
-			content: [
-				'article',
-				'articles',
-				'articleAdd',
-				'articleCheck',
-				'articleDisambiguation',
-				'articleNotFound',
-				'articleSearch',
-				'articlesSearch',
-				'articleRedirect',
-				'history',
-				'info',
-				'infoFilled',
-				'folderPlaceholder',
-				'die',
-				'download',
-				'robot',
-				'share',
-				'specialPages',
-				'tag',
-				'upload',
-				'window'
-			],
-			alerts: [
-				'alert',
-				'bell',
-				'bellOutline',
-				'error',
-				'message',
-				'notice',
-				'speechBubble',
-				'speechBubbleAdd',
-				'speechBubbles',
-				'tray'
-			],
-			interactions: [
-				'add',
-				'browser',
-				'cancel',
-				'check',
-				'checkAll',
-				'clear',
-				'clock',
-				'close',
-				'ellipsis',
-				'feedback',
-				'funnel',
-				'heart',
-				'help',
-				'helpNotice',
-				'home',
-				'key',
-				'keyboard',
-				'lightbulb',
-				'logIn',
-				'logOut',
-				'network',
-				'networkOff',
-				'newWindow',
-				'pageSettings',
-				'printer',
-				'reload',
-				'search',
-				'settings',
-				'stopHand',
-				'subtract'
-			],
-			moderation: [
-				'bookmarkOutline',
-				'bookmark',
-				'block',
-				'unBlock',
-				'flag',
-				'unFlag',
-				'lock',
-				'unLock',
-				'star',
-				'halfStar',
-				'unStar',
-				'trash',
-				'restore',
-				'pushPin',
-				'ongoingConversation'
-			],
-			'editing-core': [
-				'edit',
-				'editLock',
-				'editUndo',
-				'link',
-				'unLink',
-				'linkExternal',
-				'linkSecure',
-				'redo',
-				'undo'
-			],
-			'editing-styling': [
-				'bigger',
-				'smaller',
-				'subscript',
-				'superscript',
-				'bold',
-				'highlight',
-				'italic',
-				'strikethrough',
-				'underline',
-				'textDirLTR',
-				'textDirRTL',
-				'textStyle'
-			],
-			'editing-list': [
-				'indent',
-				'listBullet',
-				'listNumbered',
-				'outdent'
-			],
-			'editing-advanced': [
-				'alignCenter',
-				'alignLeft',
-				'alignRight',
-				'attachment',
-				'calendar',
-				'code',
-				'hieroglyph',
-				'imageLayoutBasic',
-				'imageLayoutFrame',
-				'imageLayoutFrameless',
-				'imageLayoutThumbnail',
-				'labFlask',
-				'language',
-				'layout',
-				'mathematics',
-				'mathematicsDisplayBlock',
-				'mathematicsDisplayDefault',
-				'mathematicsDisplayInline',
-				'markup',
-				'newline',
-				'noWikiText',
-				'outline',
-				'puzzle',
-				'quotes',
-				'searchCaseSensitive',
-				'searchDiacritics',
-				'searchRegularExpression',
-				'signature',
-				'specialCharacter',
-				'table',
-				'tableAddColumnAfter',
-				'tableAddColumnBefore',
-				'tableAddRowAfter',
-				'tableAddRowBefore',
-				'tableCaption',
-				'tableMergeCells',
-				'tableMoveColumnAfter',
-				'tableMoveColumnBefore',
-				'tableMoveRowAfter',
-				'tableMoveRowBefore',
-				'templateAdd',
-				'wikiText'
-			],
-			'editing-citation': [
-				'book',
-				'journal',
-				'newspaper',
-				'reference',
-				'referenceExisting',
-				'references'
-			],
-			media: [
-				'camera',
-				'chart',
-				'fullScreen',
-				'exitFullscreen',
-				'image',
-				'imageAdd',
-				'imageLock',
-				'imageGallery',
-				'imageBroken',
-				'musicalScore',
-				'play',
-				'pause',
-				'volumeDown',
-				'volumeUp',
-				'volumeOff',
-				'stop',
-				'zoomIn',
-				'zoomOut'
-			],
-			location: [
-				'globe',
-				'map',
-				'mapPin',
-				'mapPinAdd',
-				'mapTrail'
-			],
-			user: [
-				'userAdd',
-				'userAnonymous',
-				'userAvatar',
-				'userAvatarOutline',
-				'userContributions',
-				'userGroup',
-				'userTalk'
-			],
-			layout: [
-				'menu',
-				'recentChanges',
-				'textFlow',
-				'textSummary',
-				'viewCompact',
-				'viewDetails'
-			],
-			accessibility: [
-				'bright',
-				'halfBright',
-				'notBright',
-				'eye',
-				'eyeClosed',
-				'moon',
-				'largerText',
-				'smallerText',
-				'visionSimulator'
-			],
-			wikimedia: [
-				'logoCC',
-				'logoWikidata',
-				'logoWikimedia',
-				'logoWikimediaCommons',
-				'logoWikimediaDiscovery',
-				'logoWikipedia'
-			]
-		},
-		indicators = [
-			'clear',
-			'down',
-			'required',
-			'up'
-		],
-		iconsFieldsets,
+	var imageList = Demo.static.imageLists[ demo.mode.theme ];
+
+	var iconOrder = [
+		'movement',
+		'content',
+		'alerts',
+		'interactions',
+		'moderation',
+		'editing-core',
+		'editing-styling',
+		'editing-list',
+		'editing-advanced',
+		'editing-citation',
+		'media',
+		'location',
+		'user',
+		'layout',
+		'accessibility',
+		'wikimedia'
+	];
+
+	var iconsFieldsets,
 		iconsWidgets = [],
 		indicatorsFieldset = new Demo.LinkedFieldsetLayout( {
 			label: 'Indicators',
 			id: 'demo-section-indicators'
 		} );
 
-	indicators.forEach( function ( indicator ) {
+	Object.keys( imageList.indicators ).forEach( function ( indicator ) {
 		indicatorsFieldset.addItems( [
 			new OO.ui.FieldLayout(
 				new OO.ui.IndicatorWidget( {
@@ -275,16 +41,19 @@ Demo.static.pages.icons = function ( demo ) {
 			)
 		] );
 	} );
-	iconsFieldsets = Object.keys( icons ).map( function ( iconSet ) {
+	iconsFieldsets = iconOrder.map( function ( name ) {
 		var iconsFieldset = new Demo.LinkedFieldsetLayout( {
-			label: 'Icons – ' + iconSet,
-			id: 'demo-section-' + iconSet
+			label: 'Icons – ' + name,
+			id: 'demo-section-' + name
 		} );
 
-		icons[ iconSet ].forEach( function ( icon ) {
+		var icons = imageList[ 'icons-' + name ];
+		Object.keys( icons ).forEach( function ( icon ) {
+			var deprecationMessage = icons[ icon ].deprecated;
 			var iconWidget = new OO.ui.IconWidget( {
 				icon: icon,
-				title: icon
+				disabled: !!deprecationMessage,
+				title: deprecationMessage || icon
 			} );
 			iconsWidgets.push( iconWidget );
 			iconsFieldset.addItems( [
@@ -293,12 +62,34 @@ Demo.static.pages.icons = function ( demo ) {
 					align: 'inline'
 				} )
 			] );
+			if ( icons[ icon ].file.lang ) {
+				Object.keys( icons[ icon ].file.lang ).forEach( function ( lang ) {
+					var langs = lang.split( ',' );
+					var langList = langs.join( ', ' );
+					var title = icon + ' (' + langList + ')';
+					var $label = $( '<span>' ).text( icon + ' ' ).append(
+						$( '<small>' ).text( '(' + langList + ')' )
+					);
+					var iconWidgetLang = new OO.ui.IconWidget( {
+						icon: icon,
+						title: title
+					} );
+					iconWidgetLang.$element.attr( 'lang', langs[ 0 ] );
+					iconsWidgets.push( iconWidgetLang );
+					iconsFieldset.addItems( [
+						new OO.ui.FieldLayout( iconWidgetLang, {
+							label: $label,
+							align: 'inline'
+						} )
+					] );
+				} );
+			}
 		} );
 
 		return iconsFieldset;
 	} );
 
-	selector = new OO.ui.ButtonSelectWidget( {
+	var selector = new OO.ui.ButtonSelectWidget( {
 		items: [
 			new OO.ui.ButtonOptionWidget( {
 				label: 'None',
@@ -338,13 +129,17 @@ Demo.static.pages.icons = function ( demo ) {
 			destructive: false
 		} );
 
-	demo.$element.append(
+	demo.$container.append(
 		new OO.ui.PanelLayout( {
 			expanded: false,
 			framed: true
 		} ).$element
-			.addClass( 'demo-container demo-icons' )
-			.attr( 'role', 'main' )
+			.addClass( 'demo-icons' )
+			.attr( {
+				// 'default' is not a real language, but forces us to render
+				// non-language specific icons, e.g. bold-a.svg
+				lang: 'default'
+			} )
 			.append(
 				selector.$element,
 				iconsFieldsets.map( function ( item ) { return item.$element[ 0 ]; } ),

@@ -52,11 +52,8 @@ OO.ui.StackLayout = function OoUiStackLayout( config ) {
 	this.$element.addClass( 'oo-ui-stackLayout' );
 	if ( this.continuous ) {
 		this.$element.addClass( 'oo-ui-stackLayout-continuous' );
-		this.$element.on( 'scroll', OO.ui.debounce( this.onScroll.bind( this ), 250 ) );
 	}
-	if ( Array.isArray( config.items ) ) {
-		this.addItems( config.items );
-	}
+	this.addItems( config.items || [] );
 };
 
 /* Setup */
@@ -74,71 +71,7 @@ OO.mixinClass( OO.ui.StackLayout, OO.ui.mixin.GroupElement );
  * @param {OO.ui.Layout|null} item Current panel or `null` if no panel is shown
  */
 
-/**
- * When used in continuous mode, this event is emitted when the user scrolls down
- * far enough such that currentItem is no longer visible.
- *
- * @event visibleItemChange
- * @param {OO.ui.PanelLayout} panel The next visible item in the layout
- */
-
 /* Methods */
-
-/**
- * Handle scroll events from the layout element
- *
- * @param {jQuery.Event} e
- * @fires visibleItemChange
- */
-OO.ui.StackLayout.prototype.onScroll = function () {
-	var currentRect, currentIndex, newIndex, containerRect,
-		len = this.items.length;
-
-	if ( !this.currentItem ) {
-		// onScroll should never be triggered while there are no items, but this event is debounced.
-		return;
-	}
-
-	currentIndex = this.items.indexOf( this.currentItem );
-	newIndex = currentIndex;
-	containerRect = this.$element[ 0 ].getBoundingClientRect();
-
-	if ( !containerRect || ( !containerRect.top && !containerRect.bottom ) ) {
-		// Can't get bounding rect, possibly not attached.
-		return;
-	}
-
-	function getRect( item ) {
-		return item.$element[ 0 ].getBoundingClientRect();
-	}
-
-	function isVisible( item ) {
-		var rect = getRect( item );
-		return rect.bottom > containerRect.top && rect.top < containerRect.bottom;
-	}
-
-	currentRect = getRect( this.currentItem );
-
-	if ( currentRect.bottom < containerRect.top ) {
-		// Scrolled down past current item
-		while ( ++newIndex < len ) {
-			if ( isVisible( this.items[ newIndex ] ) ) {
-				break;
-			}
-		}
-	} else if ( currentRect.top > containerRect.bottom ) {
-		// Scrolled up past current item
-		while ( --newIndex >= 0 ) {
-			if ( isVisible( this.items[ newIndex ] ) ) {
-				break;
-			}
-		}
-	}
-
-	if ( newIndex !== currentIndex ) {
-		this.emit( 'visibleItemChange', this.items[ newIndex ] );
-	}
-};
 
 /**
  * Get the current panel.
@@ -173,19 +106,23 @@ OO.ui.StackLayout.prototype.unsetCurrentItem = function () {
  * specifies a different insertion point. Adding a panel that is already in the stack will move it
  * to the end of the array or the point specified by the index.
  *
- * @param {OO.ui.Layout[]} items Panels to add
+ * @param {OO.ui.Layout[]} [items] Panels to add
  * @param {number} [index] Index of the insertion point
  * @chainable
  * @return {OO.ui.StackLayout} The layout, for chaining
  */
 OO.ui.StackLayout.prototype.addItems = function ( items, index ) {
+	if ( !items || !items.length ) {
+		return this;
+	}
+
 	// Update the visibility
 	this.updateHiddenState( items, this.currentItem );
 
 	// Mixin method
 	OO.ui.mixin.GroupElement.prototype.addItems.call( this, items, index );
 
-	if ( !this.currentItem && items.length ) {
+	if ( !this.currentItem ) {
 		this.setItem( items[ 0 ] );
 	}
 
@@ -198,18 +135,28 @@ OO.ui.StackLayout.prototype.addItems = function ( items, index ) {
  * Removed panels are detached from the DOM, not removed, so that they may be reused. To remove all
  * panels, you may wish to use the #clearItems method instead.
  *
- * @param {OO.ui.Layout[]} items Panels to remove
+ * @param {OO.ui.Layout[]} itemsToRemove Panels to remove
  * @chainable
  * @return {OO.ui.StackLayout} The layout, for chaining
  * @fires set
  */
-OO.ui.StackLayout.prototype.removeItems = function ( items ) {
-	// Mixin method
-	OO.ui.mixin.GroupElement.prototype.removeItems.call( this, items );
+OO.ui.StackLayout.prototype.removeItems = function ( itemsToRemove ) {
+	var isCurrentItemRemoved = itemsToRemove.indexOf( this.currentItem ) !== -1;
 
-	if ( items.indexOf( this.currentItem ) !== -1 ) {
+	var nextItem;
+	if ( isCurrentItemRemoved ) {
+		var i = this.items.indexOf( this.currentItem );
+		do {
+			nextItem = this.items[ ++i ];
+		} while ( nextItem && itemsToRemove.indexOf( nextItem ) !== -1 );
+	}
+
+	// Mixin method
+	OO.ui.mixin.GroupElement.prototype.removeItems.call( this, itemsToRemove );
+
+	if ( isCurrentItemRemoved ) {
 		if ( this.items.length ) {
-			this.setItem( this.items[ 0 ] );
+			this.setItem( nextItem || this.items[ this.items.length - 1 ] );
 		} else {
 			this.unsetCurrentItem();
 		}
@@ -296,10 +243,8 @@ OO.ui.StackLayout.prototype.resetScroll = function () {
  * @param {OO.ui.Layout} [selectedItem] Selected item to show
  */
 OO.ui.StackLayout.prototype.updateHiddenState = function ( items, selectedItem ) {
-	var i, len;
-
 	if ( !this.continuous ) {
-		for ( i = 0, len = items.length; i < len; i++ ) {
+		for ( var i = 0, len = items.length; i < len; i++ ) {
 			if ( !selectedItem || selectedItem !== items[ i ] ) {
 				items[ i ].toggle( false );
 				items[ i ].$element.attr( 'aria-hidden', 'true' );

@@ -38,9 +38,7 @@ OO.ui.MultiselectWidget = function OoUiMultiselectWidget( config ) {
 	} );
 
 	// Initialization
-	if ( config.items ) {
-		this.addItems( config.items );
-	}
+	this.addItems( config.items || [] );
 	this.$group.addClass( 'oo-ui-multiselectWidget-group' );
 	this.$element.addClass( 'oo-ui-multiselectWidget' )
 		.append( this.$group );
@@ -113,9 +111,8 @@ OO.ui.MultiselectWidget.prototype.selectItems = function ( items ) {
  * @return {OO.ui.Widget} The widget, for chaining
  */
 OO.ui.MultiselectWidget.prototype.selectItemsByData = function ( datas ) {
-	var items,
-		widget = this;
-	items = datas.map( function ( data ) {
+	var widget = this;
+	var items = datas.map( function ( data ) {
 		return widget.findItemFromData( data );
 	} );
 	this.selectItems( items );

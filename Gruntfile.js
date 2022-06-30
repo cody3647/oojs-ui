@@ -2,24 +2,30 @@
  * Grunt file
  */
 
-/* eslint-env node, es6 */
+'use strict';
+
 module.exports = function ( grunt ) {
-	var modules = grunt.file.readYAML( 'build/modules.yaml' ),
+	const OO = require( 'oojs' ),
+		// modules is modified in place later, so make a deep copy
+		modules = OO.copy( require( './build/modules' ) ),
 		pkg = grunt.file.readJSON( 'package.json' ),
+		path = require( 'path' ),
+		stringify = require( 'javascript-stringify' ),
 		themes = {
 			omen: 'Omen',
 			wikimediaui: 'WikimediaUI', // Do not change this line or you'll break `grunt add-theme`
 			apex: 'Apex'
 		},
 		lessFiles = {},
-		lessTargets = {},
 		colorizeSvgFiles = {},
 		requiredFiles = [],
 		concatCssFiles = {},
 		concatJsFiles = {},
-		concatOmnibus = {},
+		concatOmnibusJs = {},
+		concatOmnibusCss = {},
 		rtlFiles = {},
 		minBanner = '/*! OOUI v<%= pkg.version %> | http://oojs.mit-license.org */';
+	let lessTargets = {};
 
 	grunt.loadNpmTasks( 'grunt-banana-checker' );
 	grunt.loadNpmTasks( 'grunt-contrib-clean' );
@@ -34,14 +40,13 @@ module.exports = function ( grunt ) {
 	grunt.loadNpmTasks( 'grunt-file-exists' );
 	grunt.loadNpmTasks( 'grunt-karma' );
 	grunt.loadNpmTasks( 'grunt-stylelint' );
-	grunt.loadNpmTasks( 'grunt-svgmin' );
 	grunt.loadNpmTasks( 'grunt-tyops' );
 	grunt.loadNpmTasks( 'grunt-eslint' );
 	grunt.loadNpmTasks( 'grunt-string-replace' );
 	grunt.loadTasks( 'build/tasks' );
 
 	( function () {
-		var distFile, module, moduleDef, theme, moduleStyleFiles;
+		let theme;
 
 		for ( theme in themes ) {
 			lessFiles[ theme ] = {};
@@ -54,10 +59,10 @@ module.exports = function ( grunt ) {
 			// Only pass one argument, otherwise grunt.file.exists() will try to join them
 			return grunt.file.exists( file );
 		}
-		for ( module in modules ) {
-			if ( module.indexOf( '{theme}' ) !== -1 || module.indexOf( '{Theme}' ) !== -1 ) {
+		for ( const module in modules ) {
+			if ( module.includes( '{theme}' ) || module.includes( '{Theme}' ) ) {
 				for ( theme in themes ) {
-					moduleDef = {};
+					const moduleDef = {};
 					moduleDef.theme = theme;
 					if ( modules[ module ].scripts ) {
 						moduleDef.scripts = modules[ module ].scripts
@@ -81,7 +86,7 @@ module.exports = function ( grunt ) {
 			}
 		}
 
-		for ( module in modules ) {
+		for ( const module in modules ) {
 			requiredFiles.push.apply( requiredFiles, modules[ module ].scripts || [] );
 			requiredFiles.push.apply( requiredFiles, modules[ module ].styles || [] );
 		}
@@ -92,10 +97,9 @@ module.exports = function ( grunt ) {
 		// Generate all task targets required to process given file into a pair of CSS files (for
 		// LTR and RTL), and return file name of LTR file.
 		function processFile( fileName ) {
-			var lessFileName, cssFileName, path;
-			path = require( 'path' );
+			let cssFileName;
 			if ( path.extname( fileName ) === '.json' ) {
-				lessFileName = fileName.replace( /\.json$/, '.less' ).replace( /^src/, 'dist/tmp' );
+				const lessFileName = fileName.replace( /\.json$/, '.less' ).replace( /^src/, 'dist/tmp' );
 
 				colorizeSvgFiles[ fileName.replace( /.+\/(\w+)\/([\w-]+)\.(?:json|less)$/, '$1-$2' ) ] = {
 					options: grunt.file.readJSON( fileName ),
@@ -119,18 +123,18 @@ module.exports = function ( grunt ) {
 			}
 			return cssFileName;
 		}
-		for ( module in modules ) {
+		for ( const module in modules ) {
 			if ( modules[ module ].styles ) {
-				moduleStyleFiles = modules[ module ].styles;
+				const moduleStyleFiles = modules[ module ].styles;
 				theme = modules[ module ].theme;
 
-				distFile = 'dist/' + module + '.css';
+				const distFile = 'dist/' + module + '.css';
 
 				concatCssFiles[ distFile ] = moduleStyleFiles.map( processFile );
 				concatCssFiles[ rtlPath( distFile ) ] = concatCssFiles[ distFile ].map( rtlPath );
 			}
 			if ( modules[ module ].scripts ) {
-				distFile = 'dist/' + module + '.js';
+				const distFile = 'dist/' + module + '.js';
 				concatJsFiles[ distFile ] = modules[ module ].scripts.slice();
 				concatJsFiles[ distFile ].unshift( 'src/intro.js.txt' );
 				concatJsFiles[ distFile ].push( 'src/outro.js.txt' );
@@ -158,28 +162,27 @@ module.exports = function ( grunt ) {
 		}
 
 		// Composite files
-		concatOmnibus[ 'dist/oojs-ui.js' ] = [
+		concatOmnibusJs[ 'dist/oojs-ui.js' ] = [
 			'dist/oojs-ui-core.js',
 			'dist/oojs-ui-widgets.js',
 			'dist/oojs-ui-toolbars.js',
 			'dist/oojs-ui-windows.js'
 		];
 		for ( theme in themes ) {
-			concatOmnibus[ themify( 'dist/oojs-ui-{theme}.css' ) ] = [
+			concatOmnibusCss[ themify( 'dist/oojs-ui-{theme}.css' ) ] = [
 				'dist/oojs-ui-core-{theme}.css',
 				'dist/oojs-ui-widgets-{theme}.css',
 				'dist/oojs-ui-toolbars-{theme}.css',
 				'dist/oojs-ui-windows-{theme}.css',
 				'dist/oojs-ui-images-{theme}.css'
 			].map( themify );
-			concatOmnibus[ rtlPath( themify( 'dist/oojs-ui-{theme}.css' ) ) ] =
-				concatOmnibus[ themify( 'dist/oojs-ui-{theme}.css' ) ].map( rtlPath );
+			concatOmnibusCss[ rtlPath( themify( 'dist/oojs-ui-{theme}.css' ) ) ] =
+				concatOmnibusCss[ themify( 'dist/oojs-ui-{theme}.css' ) ].map( rtlPath );
 		}
 
 	}() );
 
 	function strip( str ) {
-		var path = require( 'path' );
 		// http://gruntjs.com/configuring-tasks#building-the-files-object-dynamically
 		// http://gruntjs.com/api/grunt.file#grunt.file.expandmapping
 		return function ( dest, src ) {
@@ -215,7 +218,6 @@ module.exports = function ( grunt ) {
 			options: {
 				typos: 'build/typos.json'
 			},
-			build: 'build/modules.yaml',
 			src: '{src,php}/**/*.{js,json,less,css}'
 		},
 		concat: {
@@ -234,11 +236,17 @@ module.exports = function ( grunt ) {
 			css: {
 				files: concatCssFiles
 			},
-			omnibus: {
+			omnibusJs: {
 				options: {
 					banner: ''
 				},
-				files: concatOmnibus
+				files: concatOmnibusJs
+			},
+			omnibusCss: {
+				options: {
+					banner: ''
+				},
+				files: concatOmnibusCss
 			},
 			i18nMessages: {
 				options: {
@@ -291,13 +299,7 @@ module.exports = function ( grunt ) {
 			}
 		},
 		copy: {
-			imagesCommon: {
-				src: 'src/styles/images/*.cur',
-				dest: 'dist/images/',
-				expand: true,
-				flatten: true
-			},
-			imagesThemes: {
+			images: {
 				src: 'src/themes/*/*.json',
 				dest: 'dist/',
 				expand: true,
@@ -344,63 +346,10 @@ module.exports = function ( grunt ) {
 			}
 		},
 		colorizeSvg: colorizeSvgFiles,
-		// SVG Optimization
-		svgmin: {
-			options: {
-				js2svg: {
-					indent: '\t',
-					pretty: true
-				},
-				multipass: true,
-				plugins: [ {
-					cleanupIDs: false
-				}, {
-					removeDesc: false
-				}, {
-					removeRasterImages: true
-				}, {
-					removeTitle: false
-				}, {
-					removeViewBox: false
-				}, {
-					removeXMLProcInst: false
-				}, {
-					sortAttrs: true
-				} ]
-			},
-			srcSvgs: {
-				files: [ {
-					expand: true,
-					cwd: 'src',
-					src: [
-						'**/*.svg'
-					],
-					dest: 'src',
-					ext: '.svg'
-				} ]
-			},
-			distSvgs: {
-				options: {
-					js2svg: {
-						pretty: false
-					}
-				},
-				files: [ {
-					expand: true,
-					cwd: 'dist',
-					src: [
-						'**/*.svg'
-					],
-					dest: 'dist',
-					ext: '.svg'
-				} ]
-			}
-		},
 		cssmin: {
 			options: {
 				keepSpecialComments: 0,
 				banner: minBanner,
-				compatibility: 'ie9',
 				report: 'gzip'
 			},
 			dist: {
@@ -414,8 +363,6 @@ module.exports = function ( grunt ) {
 		// Lint – Code
 		eslint: {
 			options: {
-				reportUnusedDisableDirectives: true,
-				extensions: [ '.js', '.json' ],
 				cache: true
 			},
 			all: [
@@ -429,7 +376,6 @@ module.exports = function ( grunt ) {
 		// Lint – Styling
 		stylelint: {
 			options: {
-				syntax: 'less',
 				reportNeedlessDisables: true
 			},
 			dev: [
@@ -523,13 +469,16 @@ module.exports = function ( grunt ) {
 		// Development
 		watch: {
 			files: [
-				'<%= eslint.dev %>',
+				'<%= eslint.all %>',
 				'<%= stylelint.dev %>',
 				'src/**/*.less',
 				'php/**/*.php',
-				'.{stylelintrc,eslintrc.json}'
+				'.{stylelintrc,eslintrc.json}',
+				'!demos/{composer.json,composer.lock}',
+				'!demos/{node_modules,dist,php,vendor}/**/*'
 			],
-			tasks: 'quick-build'
+			// Task set based on file extension in watch handler
+			tasks: ''
 		},
 
 		// Adding new theme
@@ -615,11 +564,39 @@ module.exports = function ( grunt ) {
 		}
 	} );
 
+	grunt.event.on( 'watch', function ( action, filepath ) {
+		// Clear tasks set on last run.
+		grunt.config( 'watch.tasks', '' );
+		switch ( path.extname( filepath ) ) {
+			case '.js':
+				if ( filepath.includes( 'modules.js' ) ) {
+					// modules.js could change the .js or .less lists.
+					grunt.config( 'watch.tasks', 'quick-build' );
+				} else {
+					grunt.config( 'watch.tasks', 'quick-build-code' );
+				}
+				break;
+			case '.less':
+				grunt.config( 'watch.tasks', 'quick-build-css' );
+				break;
+			case '.json':
+				if ( filepath.includes( 'i18n/' ) ) {
+					// Only JS uses i18n messages at the moment, at it does
+					// so by compiling them into the library when building.
+					grunt.config( 'watch.tasks', 'quick-build-code' );
+				}
+				break;
+			case '.php':
+				grunt.config( 'watch.tasks', 'copy:demos' );
+				break;
+		}
+	} );
+
 	grunt.registerTask( 'git-status', function () {
-		var done = this.async();
+		const done = this.async();
 		// Are there unstaged changes?
 		require( 'child_process' ).exec( 'git ls-files --modified', function ( err, stdout, stderr ) {
-			var ret = err || stderr || stdout;
+			const ret = err || stderr || stdout;
 			if ( ret ) {
 				grunt.log.error( 'Unstaged changes in these files:' );
 				grunt.log.error( ret );
@@ -632,7 +609,7 @@ module.exports = function ( grunt ) {
 	} );
 
 	grunt.registerTask( 'pre-git-build', function () {
-		var done = this.async();
+		const done = this.async();
 		require( 'child_process' ).exec( 'git rev-parse HEAD', function ( err, stout, stderr ) {
 			if ( !stout || err || stderr ) {
 				grunt.log.err( err || stderr );
@@ -649,17 +626,43 @@ module.exports = function ( grunt ) {
 		grunt.log.warn( 'You have built a no-frills, SVG-only, LTR-only version for development; some things will be broken.' );
 	} );
 
-	grunt.registerTask( 'build-code', [ 'concat:i18nMessages', 'concat:js' ] );
+	grunt.registerTask( 'demo-image-list', function () {
+		const imageLists = {};
+		for ( const module in modules ) {
+			if ( module.includes( 'oojs-ui-images-' ) ) {
+				const theme = modules[ module ].theme;
+				imageLists[ theme ] = imageLists[ theme ] || {};
+				modules[ module ].styles.forEach( function ( style ) {
+					const data = require( './' + style );
+					const name = path.parse( style ).name;
+					imageLists[ theme ][ name ] = data.images;
+				} );
+			}
+		}
+		grunt.file.write(
+			'./demos/dist/image-lists.js',
+			'Demo.static.imageLists = ' + stringify( imageLists, null, '\t' ) + ';\n'
+		);
+	} );
+
+	grunt.registerTask( 'build-code', [ 'concat:i18nMessages', 'concat:js', 'concat:omnibusJs' ] );
 	grunt.registerTask( 'build-styling', [
 		'colorizeSvg', 'less', 'cssjanus',
-		'concat:css', 'concat:demoCss',
-		'copy:imagesCommon', 'copy:imagesThemes'
+		'concat:css', 'concat:omnibusCss', 'concat:demoCss',
+		'copy:images'
+	] );
+	grunt.registerTask( 'build-styling-ltr', [
+		// Same as 'build-styling' but without 'cssjanus' and 'concat:demoCss' which are
+		// only for RTL.
+		'colorizeSvg', 'less',
+		'concat:css', 'concat:omnibusCss',
+		'copy:images'
 	] );
 	grunt.registerTask( 'build-i18n', [ 'copy:i18n' ] );
 	grunt.registerTask( 'build-tests', [ 'exec:rubyTestSuiteGenerator', 'exec:phpGenerateJSPHPForKarma' ] );
 	grunt.registerTask( 'build', [
-		'clean:build', 'fileExists', 'tyops', 'build-code', 'build-styling', 'build-i18n',
-		'concat:omnibus',
+		'clean:build', 'fileExists', 'tyops',
+		'build-code', 'build-styling', 'build-i18n',
 		'copy:dist',
 		'copy:wikimediauibasevars',
 		'clean:tmp', 'demos'
@@ -671,15 +674,15 @@ module.exports = function ( grunt ) {
 	grunt.registerTask( 'quick-build', [
 		'pre-git-build', 'clean:build', 'fileExists', 'tyops',
 		'build-code',
-		'colorizeSvg', 'less', 'concat:css',
-		'copy:imagesCommon', 'copy:imagesThemes',
-		'build-i18n', 'concat:omnibus', 'copy:demos', 'copy:fastcomposerdemos',
+		'build-styling-ltr',
+		'build-i18n', 'copy:demos', 'demo-image-list', 'copy:fastcomposerdemos',
 		'note-quick-build'
 	] );
-	grunt.registerTask( 'quick-build-code', [ 'build-code', 'copy:demos' ] );
+	grunt.registerTask( 'quick-build-code', [ 'build-code', 'copy:demos', 'demo-image-list' ] );
+	grunt.registerTask( 'quick-build-css', [ 'build-styling-ltr', 'copy:demos', 'demo-image-list' ] );
 
 	// Minification tasks for the npm publish step.
-	grunt.registerTask( 'minify', [ 'uglify', 'svgmin:distSvgs', 'cssmin' ] );
+	grunt.registerTask( 'minify', [ 'uglify', 'cssmin' ] );
 	// Note that this skips "git-build", so version numbers are final and don't have a git hash.
 	grunt.registerTask( 'publish-build', [ 'build', 'minify' ] );
 
@@ -690,7 +693,7 @@ module.exports = function ( grunt ) {
 
 	grunt.registerTask( '_test', [ 'prep-test', 'clean:coverage', 'karma:main' /* T190200 , 'karma:other' */ ] );
 	grunt.registerTask( '_ci', [ '_test', 'minify', 'demos', 'exec:composer', 'git-status' ] );
-	grunt.registerTask( 'demos', [ 'clean:demos', 'copy:demos', 'exec:demos' ] );
+	grunt.registerTask( 'demos', [ 'clean:demos', 'copy:demos', 'demo-image-list', 'exec:demos' ] );
 
 	grunt.registerTask( 'add-theme-check', function () {
 		if ( grunt.option( 'template' ) === 'MISSING' ) {

@@ -12,7 +12,6 @@
 
 // Background & Text Colors
 @background-color-base--active: @wmui-color-base80;
-@background-color-base--read-only: @wmui-color-base90;
 @background-color-frameless--hover: @background-color-quiet--hover;
 @background-color-frameless--active: @background-color-quiet--active;
 @background-color-pending-stripe: @wmui-color-base80;
@@ -20,8 +19,6 @@
 @color-taboption: @color-base--hover;
 
 // Primary 'Progressive' and 'Destructive' Colors
-@color-primary--active-hover: @color-primary;
-
 @color-destructive-non-primary: #d73333; // Exemption for non-primary buttons, foremost used in VE, lightened up R50 to align to AA contrast ratio
 
 // Disabled Widgets
@@ -54,7 +51,7 @@
 @size-icon: ( unit( @min-size-icon ) / @ooui-font-size-browser / @ooui-font-size-base );
 @size-icon-small: ( 14 / @ooui-font-size-browser / @ooui-font-size-base );
 @size-indicator: ( 12 / @ooui-font-size-browser / @ooui-font-size-base ); // equals `0.9375em`≈`12px`
-@size-dialog-bar--desktop: ( 40 / @ooui-font-size-browser / @ooui-font-size-base ); // equals `3.125em`≈`40px`
+@size-dialog-bar--desktop: ( 42 / @ooui-font-size-browser / @ooui-font-size-base ); // equals `3em`≈`40px`
 @size-dialog-bar--mobile: ( 44 / @ooui-font-size-browser / @ooui-font-size-base ); // equals `3.4375em`≈`44px`
 @size-dialog-message-bar: ( 40 / @ooui-font-size-browser / @ooui-font-size-base );
 @size-tool: ( 42 / @ooui-font-size-browser / @ooui-font-size-base );
@@ -135,8 +132,6 @@
 // All paddings holding icons need `em`s due to font-size derived icon scaling.
 @padding-horizontal-base-iconized: ( 12 / @ooui-font-size-browser / @ooui-font-size-base );
 @padding-vertical-label: 4px;
-// Menu items don't have a border.
-@padding-vertical-menu: @padding-vertical-base + @border-width-base;
 @padding-vertical-message-block: 16px;
 @padding-top-icon-indicator: ( 30 / @ooui-font-size-browser / @ooui-font-size-base );
 @padding-top-tool: ( 42 / @ooui-font-size-browser / @ooui-font-size-base );
@@ -170,7 +165,7 @@
 @box-shadow-toolbar-top: 0 1px 1px 0 rgba( 0, 0, 0, 0.1 );
 @box-shadow-toolbar-bottom: 0 -1px 1px 0 rgba( 0, 0, 0, 0.1 );
 @box-shadow-progressbar: @box-shadow-card;
-@box-shadow-progressive--focus: inset 0 0 0 1px @color-primary, inset 0 0 0 2px @color-base--inverted;
+@box-shadow-progressive-filled--focus: inset 0 0 0 1px @color-primary, inset 0 0 0 2px @color-base--inverted;
 @box-shadow-frameless-indicator--focus: 0 0 0 2px @color-primary;
 @box-shadow-action--focus: @box-shadow-base--focus, 0 0 0 1px @color-primary;
 @box-shadow-toolbar-action-button--focus: inset 0 0 0 2px @color-primary, inset 0 0 0 3px @color-base--inverted;
@@ -202,7 +197,6 @@
 @border-color-input-binary: @border-color-base--active;
 @border-color-input-binary--active: @color-primary--active;
 @border-color-input-binary--checked: @color-primary;
-@box-shadow-input-binary: 0 0 0 1px rgba( 0, 0, 0, 0.1 );
 @border-width-radio--checked: 6px;
 
 // Dialogs

@@ -53,7 +53,9 @@
  * @cfg {OO.Factory} [factory] Window factory to use for automatic instantiation
  *  Note that window classes that are instantiated with a factory must have
  *  a {@link OO.ui.Dialog#static-name static name} property that specifies a symbolic name.
- * @cfg {boolean} [modal=true] Prevent interaction outside the dialog
+ * @cfg {boolean} [modal=true] Prevent interaction outside the current window
+ * @cfg {boolean} [forceTrapFocus] Force the trapping of focus within windows. This is done
+ *  automatically for modal window managers and full screen windows.
  */
 OO.ui.WindowManager = function OoUiWindowManager( config ) {
 	// Configuration initialization
@@ -77,17 +79,23 @@ OO.ui.WindowManager = function OoUiWindowManager( config ) {
 	this.currentWindow = null;
 	this.globalEvents = false;
 	this.$returnFocusTo = null;
+	this.isolated = false;
 	this.$ariaHidden = null;
+	this.$inert = null;
 	this.onWindowResizeTimeout = null;
 	this.onWindowResizeHandler = this.onWindowResize.bind( this );
 	this.afterWindowResizeHandler = this.afterWindowResize.bind( this );
+	this.onWindowFocusHandler = this.onWindowFocus.bind( this );
 
 	// Initialization
 	this.$element
 		.addClass( 'oo-ui-windowManager' )
-		.toggleClass( 'oo-ui-windowManager-modal', this.modal );
+		.toggleClass( 'oo-ui-windowManager-modal', this.modal )
+		.toggleClass( 'oo-ui-windowManager-forceTrapFocus', !!config.forceTrapFocus );
 	if ( this.modal ) {
-		this.$element.attr( 'aria-hidden', true );
+		this.$element
+			.attr( 'aria-hidden', 'true' )
+			.attr( 'inert', '' );
 	}
 };
 
@@ -171,6 +179,15 @@ OO.ui.WindowManager.static.defaultSize = 'medium';
 /* Methods */
 
 /**
+ * Check if the window manager is modal, preventing interaction outside the current window
+ *
+ * @return {boolean} The window manager is modal
+ */
+OO.ui.WindowManager.prototype.isModal = function () {
+	return this.modal;
+};
+
+/**
  * Handle window resize events.
  *
  * @private
@@ -179,6 +196,26 @@ OO.ui.WindowManager.static.defaultSize = 'medium';
 OO.ui.WindowManager.prototype.onWindowResize = function () {
 	clearTimeout( this.onWindowResizeTimeout );
 	this.onWindowResizeTimeout = setTimeout( this.afterWindowResizeHandler, 200 );
+};
+
+/**
+ * Handle window focus events.
+ *
+ * @private
+ * @param {jQuery.Event} e Window focus event
+ */
+OO.ui.WindowManager.prototype.onWindowFocus = function () {
+	var currentWindow = this.getCurrentWindow();
+	if (
+		// This event should only be bound while a window is open
+		currentWindow &&
+		// Focus can be moved outside the window focus traps but pressing tab
+		// from the address bar (T307995). When this happens move focus back
+		// to the start of the current window.
+		!OO.ui.contains( currentWindow.$element[ 0 ], document.activeElement )
+	) {
+		currentWindow.focus();
+	}
 };
 
 /**
@@ -241,9 +278,7 @@ OO.ui.WindowManager.prototype.isOpened = function ( win ) {
  * @return {boolean} Window is being managed
  */
 OO.ui.WindowManager.prototype.hasWindow = function ( win ) {
-	var name;
-
-	for ( name in this.windows ) {
+	for ( var name in this.windows ) {
 		if ( this.windows[ name ] === win ) {
 			return true;
 		}
@@ -364,8 +399,7 @@ OO.ui.WindowManager.prototype.getCurrentWindow = function () {
  * @fires opening
  */
 OO.ui.WindowManager.prototype.openWindow = function ( win, data, lifecycle, compatOpening ) {
-	var error,
-		manager = this;
+	var manager = this;
 	data = data || {};
 
 	// Internal parameter 'lifecycle' allows this method to always return
@@ -401,6 +435,7 @@ OO.ui.WindowManager.prototype.openWindow = function ( win, data, lifecycle, comp
 	}
 
 	// Error handling
+	var error;
 	if ( !this.hasWindow( win ) ) {
 		error = 'Cannot open window: window is not attached to manager';
 	} else if ( this.lifecycle && this.lifecycle.isOpened() ) {
@@ -421,7 +456,7 @@ OO.ui.WindowManager.prototype.openWindow = function ( win, data, lifecycle, comp
 	this.preparingToOpen.done( function () {
 		if ( manager.modal ) {
 			manager.toggleGlobalEvents( true );
-			manager.toggleAriaIsolation( true );
+			manager.toggleIsolation( true );
 		}
 		manager.$returnFocusTo = data.$returnFocusTo !== undefined ?
 			data.$returnFocusTo :
@@ -479,11 +514,9 @@ OO.ui.WindowManager.prototype.openWindow = function ( win, data, lifecycle, comp
  * @fires closing
  */
 OO.ui.WindowManager.prototype.closeWindow = function ( win, data ) {
-	var error,
-		manager = this,
+	var manager = this,
 		compatClosing = $.Deferred(),
-		lifecycle = this.lifecycle,
-		compatOpened;
+		lifecycle = this.lifecycle;
 
 	// Argument handling
 	if ( typeof win === 'string' ) {
@@ -493,6 +526,7 @@ OO.ui.WindowManager.prototype.closeWindow = function ( win, data ) {
 	}
 
 	// Error handling
+	var error;
 	if ( !lifecycle ) {
 		error = 'Cannot close window: no window is currently open';
 	} else if ( !win ) {
@@ -538,7 +572,7 @@ OO.ui.WindowManager.prototype.closeWindow = function ( win, data ) {
 		manager.preparingToClose = null;
 		manager.emit( 'closing', win, compatClosing, data );
 		lifecycle.deferreds.closing.resolve( data );
-		compatOpened = manager.compatOpened;
+		var compatOpened = manager.compatOpened;
 		manager.compatOpened = null;
 		compatOpened.resolve( compatClosing.promise(), data );
 		manager.togglePreventIosScrolling( false );
@@ -550,7 +584,7 @@ OO.ui.WindowManager.prototype.closeWindow = function ( win, data ) {
 						compatClosing.notify( { state: 'teardown' } );
 						if ( manager.modal ) {
 							manager.toggleGlobalEvents( false );
-							manager.toggleAriaIsolation( false );
+							manager.toggleIsolation( false );
 						}
 						if ( manager.$returnFocusTo && manager.$returnFocusTo.length ) {
 							manager.$returnFocusTo[ 0 ].focus();
@@ -616,13 +650,12 @@ OO.ui.WindowManager.prototype.closeWindow = function ( win, data ) {
  *  explicit nor a statically configured symbolic name.
  */
 OO.ui.WindowManager.prototype.addWindows = function ( windows ) {
-	var i, len, win, name, list;
-
+	var list;
 	if ( Array.isArray( windows ) ) {
 		// Convert to map of windows by looking up symbolic names from static configuration
 		list = {};
-		for ( i = 0, len = windows.length; i < len; i++ ) {
-			name = windows[ i ].constructor.static.name;
+		for ( var i = 0, len = windows.length; i < len; i++ ) {
+			var name = windows[ i ].constructor.static.name;
 			if ( !name ) {
 				throw new Error( 'Windows must have a `name` static property defined.' );
 			}
@@ -633,9 +666,9 @@ OO.ui.WindowManager.prototype.addWindows = function ( windows ) {
 	}
 
 	// Add windows
-	for ( name in list ) {
-		win = list[ name ];
-		this.windows[ name ] = win.toggle( false );
+	for ( var n in list ) {
+		var win = list[ n ];
+		this.windows[ n ] = win.toggle( false );
 		this.$element.append( win.$element );
 		win.setManager( this );
 	}
@@ -653,15 +686,14 @@ OO.ui.WindowManager.prototype.addWindows = function ( windows ) {
  * @throws {Error} An error is thrown if the named windows are not managed by the window manager.
  */
 OO.ui.WindowManager.prototype.removeWindows = function ( names ) {
-	var promises,
-		manager = this;
+	var manager = this;
 
 	function cleanup( name, win ) {
 		delete manager.windows[ name ];
 		win.$element.detach();
 	}
 
-	promises = names.map( function ( name ) {
+	var promises = names.map( function ( name ) {
 		var cleanupWindow,
 			win = manager.windows[ name ];
 		if ( !win ) {
@@ -697,14 +729,12 @@ OO.ui.WindowManager.prototype.clearWindows = function () {
  * @return {OO.ui.WindowManager} The manager, for chaining
  */
 OO.ui.WindowManager.prototype.updateWindowSize = function ( win ) {
-	var isFullscreen;
-
 	// Bypass for non-current, and thus invisible, windows
 	if ( win !== this.currentWindow ) {
 		return;
 	}
 
-	isFullscreen = win.getSize() === 'full';
+	var isFullscreen = win.getSize() === 'full';
 
 	this.$element.toggleClass( 'oo-ui-windowManager-fullscreen', isFullscreen );
 	this.$element.toggleClass( 'oo-ui-windowManager-floating', !isFullscreen );
@@ -727,16 +757,16 @@ OO.ui.WindowManager.prototype.updateWindowSize = function ( win ) {
  * @return {OO.ui.WindowManager} The manager, for chaining
  */
 OO.ui.WindowManager.prototype.togglePreventIosScrolling = function ( on ) {
-	var
-		isIos = /ipad|iphone|ipod/i.test( navigator.userAgent ),
+	var isIos = /ipad|iphone|ipod/i.test( navigator.userAgent ),
 		$body = $( this.getElementDocument().body ),
-		scrollableRoot = OO.ui.Element.static.getRootScrollableElement( $body[ 0 ] ),
 		stackDepth = $body.data( 'windowManagerGlobalEvents' ) || 0;
 
 	// Only if this is the first/last WindowManager (see #toggleGlobalEvents)
 	if ( !isIos || stackDepth !== 1 ) {
 		return this;
 	}
+
+	var scrollableRoot = OO.ui.Element.static.getRootScrollableElement( $body[ 0 ] );
 
 	if ( on ) {
 		// We can't apply this workaround for non-fullscreen dialogs, because the user would see the
@@ -757,7 +787,7 @@ OO.ui.WindowManager.prototype.togglePreventIosScrolling = function ( on ) {
 };
 
 /**
- * Bind or unbind global events for scrolling.
+ * Bind or unbind global events for scrolling/focus.
  *
  * @private
  * @param {boolean} [on] Bind global events
@@ -765,38 +795,42 @@ OO.ui.WindowManager.prototype.togglePreventIosScrolling = function ( on ) {
  * @return {OO.ui.WindowManager} The manager, for chaining
  */
 OO.ui.WindowManager.prototype.toggleGlobalEvents = function ( on ) {
-	var scrollWidth, bodyMargin,
-		$body = $( this.getElementDocument().body ),
-		// We could have multiple window managers open so only modify
-		// the body css at the bottom of the stack
-		stackDepth = $body.data( 'windowManagerGlobalEvents' ) || 0;
+	var $body = $( this.getElementDocument().body );
+	var $window = $( this.getElementWindow() );
+	// We could have multiple window managers open so only modify
+	// the body css at the bottom of the stack
+	var stackDepth = $body.data( 'windowManagerGlobalEvents' ) || 0;
 
 	on = on === undefined ? !!this.globalEvents : !!on;
 
 	if ( on ) {
 		if ( !this.globalEvents ) {
-			$( this.getElementWindow() ).on( {
+			$window.on( {
 				// Start listening for top-level window dimension changes
-				'orientationchange resize': this.onWindowResizeHandler
+				'orientationchange resize': this.onWindowResizeHandler,
+				focus: this.onWindowFocusHandler
 			} );
 			if ( stackDepth === 0 ) {
-				scrollWidth = window.innerWidth - document.documentElement.clientWidth;
-				bodyMargin = parseFloat( $body.css( 'margin-right' ) ) || 0;
-				$body.addClass( 'oo-ui-windowManager-modal-active' );
-				$body.css( 'margin-right', bodyMargin + scrollWidth );
+				var scrollWidth = window.innerWidth - document.documentElement.clientWidth;
+				var bodyMargin = parseFloat( $body.css( 'margin-right' ) ) || 0;
+				$body
+					.addClass( 'oo-ui-windowManager-modal-active' )
+					.css( 'margin-right', bodyMargin + scrollWidth );
 			}
 			stackDepth++;
 			this.globalEvents = true;
 		}
 	} else if ( this.globalEvents ) {
-		$( this.getElementWindow() ).off( {
+		$window.off( {
 			// Stop listening for top-level window dimension changes
-			'orientationchange resize': this.onWindowResizeHandler
+			'orientationchange resize': this.onWindowResizeHandler,
+			focus: this.onWindowFocusHandler
 		} );
 		stackDepth--;
 		if ( stackDepth === 0 ) {
-			$body.removeClass( 'oo-ui-windowManager-modal-active' );
-			$body.css( 'margin-right', '' );
+			$body
+				.removeClass( 'oo-ui-windowManager-modal-active' )
+				.css( 'margin-right', '' );
 		}
 		this.globalEvents = false;
 	}
@@ -806,56 +840,73 @@ OO.ui.WindowManager.prototype.toggleGlobalEvents = function ( on ) {
 };
 
 /**
- * Toggle screen reader visibility of content other than the window manager.
+ * Toggle isolation of content other than the window manager.
+ *
+ * This hides the content from screen readers (aria-hidden) and makes
+ * it invisible to user input events (inert).
  *
  * @private
  * @param {boolean} [isolate] Make only the window manager visible to screen readers
  * @chainable
  * @return {OO.ui.WindowManager} The manager, for chaining
  */
-OO.ui.WindowManager.prototype.toggleAriaIsolation = function ( isolate ) {
-	var $topLevelElement;
-	isolate = isolate === undefined ? !this.$ariaHidden : !!isolate;
+OO.ui.WindowManager.prototype.toggleIsolation = function ( isolate ) {
+	this.isolated = isolate === undefined ? !this.isolated : !!isolate;
 
-	if ( isolate ) {
-		if ( !this.$ariaHidden ) {
-			// Find the top level element containing the window manager or the
-			// window manager's element itself in case its a direct child of body
-			$topLevelElement = this.$element.parentsUntil( 'body' ).last();
-			$topLevelElement = $topLevelElement.length === 0 ? this.$element : $topLevelElement;
+	if ( this.isolated ) {
+		// In case previously set by another window manager
+		this.$element
+			.removeAttr( 'aria-hidden' )
+			.removeAttr( 'inert' );
 
-			// In case previously set by another window manager
-			this.$element.removeAttr( 'aria-hidden' );
+		var $el = this.$element;
 
-			// Hide everything other than the window manager from screen readers
-			this.$ariaHidden = $( document.body )
-				.children()
-				.not( 'script' )
-				.not( $topLevelElement )
-				.attr( 'aria-hidden', true );
+		var ariaHidden = [];
+		var inert = [];
+
+		// Walk up the tree
+		while ( !$el.is( 'body' ) && $el.length ) {
+			// Hide all siblings at each level, just leaving the path to the manager visible.
+			var $siblings = $el.siblings().not( 'script' );
+			// $ariaHidden/$inert exclude elements which already have aria-hidden/inert set,
+			// as we wouldn't want to reset those attributes when window closes.
+			// This will also support multiple window managers opening on top of each other,
+			// as an element hidden by another manager will not be re-enabled until *that*
+			// manager closes its window.
+			ariaHidden.push.apply( ariaHidden, $siblings.not( '[aria-hidden=true]' ).toArray() );
+			inert.push.apply( inert, $siblings.not( '[inert]' ).toArray() );
+			$el = $el.parent();
 		}
-	} else if ( this.$ariaHidden ) {
+		// Build lists as plain arrays for performance ($.add is slow)
+		this.$ariaHidden = $( ariaHidden );
+		this.$inert = $( inert );
+
+		// Hide everything other than the window manager from screen readers
+		this.$ariaHidden.attr( 'aria-hidden', 'true' );
+		this.$inert.attr( 'inert', '' );
+	} else {
 		// Restore screen reader visibility
 		this.$ariaHidden.removeAttr( 'aria-hidden' );
+		this.$inert.removeAttr( 'inert' );
 		this.$ariaHidden = null;
+		this.$inert = null;
 
 		// and hide the window manager
-		this.$element.attr( 'aria-hidden', true );
+		this.$element
+			.attr( 'aria-hidden', 'true' )
+			.attr( 'inert', '' );
 	}
 
 	return this;
 };
 
+// Deprecated alias, since 0.44.1
+OO.ui.WindowManager.prototype.toggleAriaIsolation = OO.ui.WindowManager.prototype.toggleIsolation;
+
 /**
  * Destroy the window manager.
- *
- * Destroying the window manager ensures that it will no longer listen to events. If you would like
- * to continue using the window manager, but wish to remove all windows from it, use the
- * #clearWindows method instead.
  */
 OO.ui.WindowManager.prototype.destroy = function () {
-	this.toggleGlobalEvents( false );
-	this.toggleAriaIsolation( false );
 	this.clearWindows();
 	this.$element.remove();
 };

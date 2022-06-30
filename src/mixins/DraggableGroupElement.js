@@ -9,11 +9,12 @@
  *
  * @constructor
  * @param {Object} [config] Configuration options
- * @cfg {string} [orientation] Item orientation: 'horizontal' or 'vertical'. The orientation
- *  should match the layout of the items. Items displayed in a single row
+ * @cfg {OO.ui.mixin.DraggableElement[]} items
+ * @cfg {string} [orientation='vertical'] Item orientation: 'horizontal' or 'vertical'.
+ *  The orientation should match the layout of the items. Items displayed in a single row
  *  or in several rows should use horizontal orientation. The vertical orientation should only be
- *  used when the items are displayed in a single column. Defaults to 'vertical'
- * @cfg {boolean} [draggable] The items are draggable. This can change with #toggleDraggable
+ *  used when the items are displayed in a single column.
+ * @cfg {boolean} [draggable=true] The items are draggable. This can change with #toggleDraggable
  */
 OO.ui.mixin.DraggableGroupElement = function OoUiMixinDraggableGroupElement( config ) {
 	// Configuration initialization
@@ -43,9 +44,7 @@ OO.ui.mixin.DraggableGroupElement = function OoUiMixinDraggableGroupElement( con
 	} );
 
 	// Initialize
-	if ( Array.isArray( config.items ) ) {
-		this.addItems( config.items );
-	}
+	this.addItems( config.items || [] );
 	this.$element
 		.addClass( 'oo-ui-draggableGroupElement' )
 		.toggleClass( 'oo-ui-draggableGroupElement-horizontal', this.orientation === 'horizontal' );
@@ -139,10 +138,8 @@ OO.ui.mixin.DraggableGroupElement.prototype.onItemDragStart = function ( item ) 
  * Update the index properties of the items
  */
 OO.ui.mixin.DraggableGroupElement.prototype.updateIndexes = function () {
-	var i, len;
-
 	// Map the index of each object
-	for ( i = 0, len = this.itemsOrder.length; i < len; i++ ) {
+	for ( var i = 0, len = this.itemsOrder.length; i < len; i++ ) {
 		this.itemsOrder[ i ].setIndex( i );
 	}
 };
@@ -155,15 +152,14 @@ OO.ui.mixin.DraggableGroupElement.prototype.updateIndexes = function () {
  * @return {OO.ui.Element} The element, for chaining
  */
 OO.ui.mixin.DraggableGroupElement.prototype.onItemDropOrDragEnd = function () {
-	var targetIndex, originalIndex,
-		item = this.getDragItem();
+	var item = this.getDragItem();
 
 	// TODO: Figure out a way to configure a list of legally droppable
 	// elements even if they are not yet in the list
 	if ( item ) {
-		originalIndex = this.items.indexOf( item );
+		var originalIndex = this.items.indexOf( item );
 		// If the item has moved forward, add one to the index to account for the left shift
-		targetIndex = item.getIndex() + ( item.getIndex() > originalIndex ? 1 : 0 );
+		var targetIndex = item.getIndex() + ( item.getIndex() > originalIndex ? 1 : 0 );
 		if ( targetIndex !== originalIndex ) {
 			this.reorder( this.getDragItem(), targetIndex );
 			this.emit( 'reorder', this.getDragItem(), targetIndex );
@@ -183,15 +179,14 @@ OO.ui.mixin.DraggableGroupElement.prototype.onItemDropOrDragEnd = function () {
  * @fires reorder
  */
 OO.ui.mixin.DraggableGroupElement.prototype.onDragOver = function ( e ) {
-	var overIndex, targetIndex,
-		item = this.getDragItem(),
+	var item = this.getDragItem(),
 		dragItemIndex = item.getIndex();
 
 	// Get the OptionWidget item we are dragging over
-	overIndex = $( e.target ).closest( '.oo-ui-draggableElement' ).data( 'index' );
+	var overIndex = $( e.target ).closest( '.oo-ui-draggableElement' ).data( 'index' );
 
 	if ( overIndex !== undefined && overIndex !== dragItemIndex ) {
-		targetIndex = overIndex + ( overIndex > dragItemIndex ? 1 : 0 );
+		var targetIndex = overIndex + ( overIndex > dragItemIndex ? 1 : 0 );
 
 		if ( targetIndex > 0 ) {
 			this.$group.children().eq( targetIndex - 1 ).after( item.$element );

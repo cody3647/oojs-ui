@@ -11,7 +11,7 @@
  * @param {Object} [config] Configuration options
  * @cfg {jQuery} [$handle] The part of the element which can be used for dragging, defaults to
  *  the whole element
- * @cfg {boolean} [draggable] The items are draggable. This can change with #toggleDraggable
+ * @cfg {boolean} [draggable=true] The items are draggable. This can change with #toggleDraggable
  *  but the draggable state should be called from the DraggableGroupElement, which updates
  *  the whole group
  */
@@ -128,13 +128,13 @@ OO.ui.mixin.DraggableElement.prototype.onDragMouseDown = function ( e ) {
  * @fires dragstart
  */
 OO.ui.mixin.DraggableElement.prototype.onDragStart = function ( e ) {
-	var element = this,
-		dataTransfer = e.originalEvent.dataTransfer;
+	var element = this;
 
 	if ( !this.wasHandleUsed || !this.isDraggable() ) {
 		return false;
 	}
 
+	var dataTransfer = e.originalEvent.dataTransfer;
 	// Define drop effect
 	dataTransfer.dropEffect = 'none';
 	dataTransfer.effectAllowed = 'move';

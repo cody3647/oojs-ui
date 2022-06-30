@@ -13,7 +13,7 @@
  * @constructor
  * @param {Object} [config] Configuration object
  * @cfg {boolean} [valid=true] Item is valid
- * @cfg {boolean} [fixed] Item is fixed. This means the item is
+ * @cfg {boolean} [fixed=false] Item is fixed. This means the item is
  *  always included in the values and cannot be removed.
  */
 OO.ui.TagItemWidget = function OoUiTagItemWidget( config ) {
@@ -112,7 +112,7 @@ OO.mixinClass( OO.ui.TagItemWidget, OO.ui.mixin.DraggableElement );
 /**
  * Set this item as fixed, meaning it cannot be removed
  *
- * @param {string} [state] Item is fixed
+ * @param {boolean} [state] Item is fixed, omit to toggle
  * @fires fixed
  * @return {OO.ui.Widget} The widget, for chaining
  */
@@ -171,8 +171,6 @@ OO.ui.TagItemWidget.prototype.remove = function () {
  * @return {boolean|undefined} false to stop the operation
  */
 OO.ui.TagItemWidget.prototype.onKeyDown = function ( e ) {
-	var movement;
-
 	if (
 		!this.isDisabled() &&
 		!this.isFixed() &&
@@ -187,6 +185,8 @@ OO.ui.TagItemWidget.prototype.onKeyDown = function ( e ) {
 		e.keyCode === OO.ui.Keys.LEFT ||
 		e.keyCode === OO.ui.Keys.RIGHT
 	) {
+		var movement;
+
 		if ( OO.ui.Element.static.getDir( this.$element ) === 'rtl' ) {
 			movement = {
 				left: 'forwards',
@@ -222,7 +222,7 @@ OO.ui.TagItemWidget.prototype.select = function () {
 /**
  * Set the valid state of this item
  *
- * @param {boolean} [valid] Item is valid
+ * @param {boolean} [valid] Item is valid, omit to toggle
  * @fires valid
  */
 OO.ui.TagItemWidget.prototype.toggleValid = function ( valid ) {

@@ -120,7 +120,7 @@ OO.ui.mixin.TabIndexedElement.prototype.updateTabIndex = function () {
 				tabindex: this.isDisabled() ? -1 : this.tabIndex,
 				// Support: ChromeVox and NVDA
 				// These do not seem to inherit aria-disabled from parent elements
-				'aria-disabled': this.isDisabled().toString()
+				'aria-disabled': this.isDisabled() ? 'true' : null
 			} );
 		} else {
 			this.$tabIndexed.removeAttr( 'tabindex aria-disabled' );
@@ -157,8 +157,6 @@ OO.ui.mixin.TabIndexedElement.prototype.getTabIndex = function () {
  * @return {string|null} The ID of the focusable element
  */
 OO.ui.mixin.TabIndexedElement.prototype.getInputId = function () {
-	var id;
-
 	if ( !this.$tabIndexed ) {
 		return null;
 	}
@@ -166,7 +164,7 @@ OO.ui.mixin.TabIndexedElement.prototype.getInputId = function () {
 		return null;
 	}
 
-	id = this.$tabIndexed.attr( 'id' );
+	var id = this.$tabIndexed.attr( 'id' );
 	if ( id === undefined ) {
 		id = OO.ui.generateElementId();
 		this.$tabIndexed.attr( 'id', id );

@@ -1,11 +1,18 @@
 Demo.static.pages.dialogs = function ( demo ) {
-	var configs,
-		$demo = demo.$element,
+	var $demo = demo.$container,
 		$fieldsets = $( [] ),
-		windows = {},
-		windowManager = new OO.ui.WindowManager();
+		windowManager = new OO.ui.WindowManager(),
+		nonModalWindowManager = new OO.ui.WindowManager( {
+			modal: false,
+			classes: [ 'demo-dialogs-non-modal' ]
+		} ),
+		nonModalFocusTrapWindowManager = new OO.ui.WindowManager( {
+			modal: false,
+			forceTrapFocus: true,
+			classes: [ 'demo-dialogs-non-modal' ]
+		} );
 
-	configs = [
+	var configs = [
 		{
 			name: 'Convenience functions',
 			id: 'demo-section-functions',
@@ -180,16 +187,16 @@ Demo.static.pages.dialogs = function ( demo ) {
 					data: {
 						title: 'Cannot save data',
 						message: 'The server is not responding',
+						// These messages should be just long enough to trigger a vertical
+						// layout but will probably vary by which font is used.
 						actions: [
 							{
 								action: 'reject',
-								label: 'Cancel',
+								label: 'Do not try this again',
 								flags: [ 'safe', 'close' ]
 							},
 							{
 								action: 'repeat',
-								// This message should be just long enough to trigger a vertical
-								// layout but will probably vary by which font is used.
 								label: 'Try to save this again',
 								flags: [ 'primary', 'progressive' ]
 							}
@@ -212,6 +219,32 @@ Demo.static.pages.dialogs = function ( demo ) {
 							}
 						]
 					}
+				}
+			]
+		},
+		{
+			name: 'Non-modal window manager',
+			id: 'demo-section-non-modal',
+			examples: [
+				{
+					name: 'Simple dialog (large)',
+					config: {
+						size: 'large'
+					},
+					windowManager: nonModalWindowManager
+				}
+			]
+		},
+		{
+			name: 'Non-modal window manager with focus traps',
+			id: 'demo-section-non-modal-focus-trap',
+			examples: [
+				{
+					name: 'Simple dialog (large)',
+					config: {
+						size: 'large'
+					},
+					windowManager: nonModalFocusTrapWindowManager
 				}
 			]
 		},
@@ -296,8 +329,8 @@ Demo.static.pages.dialogs = function ( demo ) {
 		}
 	];
 
-	function openDialog( name, data ) {
-		windowManager.openWindow( name, data );
+	function openDialog( name, data, manager ) {
+		manager.openWindow( name, data );
 	}
 
 	configs.forEach( function ( config, j ) {
@@ -309,12 +342,11 @@ Demo.static.pages.dialogs = function ( demo ) {
 		$fieldsets = $fieldsets.add( fieldset.$element );
 
 		config.examples.forEach( function ( example, i ) {
-			var name, DialogClass,
-				openButton = new OO.ui.ButtonWidget( {
-					framed: false,
-					icon: 'window',
-					label: $( '<span>' ).attr( 'dir', 'ltr' ).text( example.name )
-				} );
+			var openButton = new OO.ui.ButtonWidget( {
+				framed: false,
+				icon: 'window',
+				label: $( '<span>' ).attr( 'dir', 'ltr' ).text( example.name )
+			} );
 
 			if ( example.method ) {
 				openButton.on(
@@ -326,32 +358,39 @@ Demo.static.pages.dialogs = function ( demo ) {
 					)
 				);
 			} else {
-				name = 'window_' + j + '_' + i;
-				DialogClass = example.dialogClass || Demo.SimpleDialog;
+				var name = 'window_' + j + '_' + i;
+				var DialogClass = example.dialogClass || Demo.SimpleDialog;
+				var manager = example.windowManager || windowManager;
+				var windows = {};
 				windows[ name ] = new DialogClass( example.config );
+				manager.addWindows( windows );
 				openButton.on(
-					'click', OO.ui.bind( openDialog, this, name, example.data )
+					'click', OO.ui.bind( openDialog, this, name, example.data, manager )
 				);
 			}
 
 			fieldset.addItems( [ new OO.ui.FieldLayout( openButton, { align: 'inline' } ) ] );
 		} );
 	} );
-	windowManager.addWindows( windows );
 
 	$demo.append(
 		new OO.ui.PanelLayout( {
 			expanded: false,
 			framed: true
 		} ).$element
-			.addClass( 'demo-container demo-dialogs' )
-			.attr( 'role', 'main' )
-			.append( $fieldsets ),
+			.addClass( 'demo-dialogs' )
+			.append(
+				$fieldsets,
+				nonModalWindowManager.$element,
+				nonModalFocusTrapWindowManager.$element
+			),
 		windowManager.$element
 	);
 
 	demo.once( 'destroy', function () {
 		windowManager.destroy();
+		nonModalWindowManager.destroy();
+		nonModalFocusTrapWindowManager.destroy();
 		OO.ui.getWindowManager().closeWindow( OO.ui.getWindowManager().getCurrentWindow() );
 	} );
 };

@@ -60,7 +60,7 @@
 	<link rel="stylesheet" href="styles/demo<?php echo $directionSuffix; ?>.css">
 	<link rel="stylesheet" href="classes/ButtonStyleShowcaseWidget.css">
 </head>
-<body class="oo-ui-<?php echo $direction; ?> oo-ui-theme-<?php echo $theme ?>">
+<body class="oo-ui-<?php echo $direction; ?> oo-ui-theme-<?php echo $theme ?> oo-ui-platform-desktop">
 	<div class="demo-root">
 		<div class="demo-header" role="banner">
 			<h1>OOUI</h1>
@@ -175,10 +175,12 @@
 				] ) )->addItems( $items );
 			?>
 		</div>
-		<?php
-			// $page is validated above
-			require_once "pages/$page.php";
-		?>
+		<div class="demo-container" role="main">
+			<?php
+				// $page is validated above
+				require_once "pages/$page.php";
+			?>
+		</div>
 	</div>
 
 	<!-- Demonstrate JavaScript "infusion" of PHP widgets -->

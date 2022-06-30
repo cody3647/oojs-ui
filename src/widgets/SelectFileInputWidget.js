@@ -22,7 +22,7 @@
  * @cfg {boolean} [multiple=false] Allow multiple files to be selected.
  * @cfg {string} [placeholder] Text to display when no file is selected.
  * @cfg {Object} [button] Config to pass to select file button.
- * @cfg {string} [icon] Icon to show next to file info
+ * @cfg {Object|string|null} [icon=null] Icon to show next to file info
  */
 OO.ui.SelectFileInputWidget = function OoUiSelectFileInputWidget( config ) {
 	var widget = this;
@@ -83,7 +83,7 @@ OO.ui.SelectFileInputWidget = function OoUiSelectFileInputWidget( config ) {
 	} );
 	this.$input.on( {
 		change: this.onFileSelected.bind( this ),
-		// Support: IE11
+		// Support: IE 11
 		// In IE 11, focussing a file input (by clicking on it) displays a text cursor and scrolls
 		// the cursor into view (in this case, it scrolls the button, which has 'overflow: hidden').
 		// Since this messes with our custom styling (the file input has large dimensions and this
@@ -204,20 +204,19 @@ OO.ui.SelectFileInputWidget.prototype.filterFiles = function ( files ) {
 	var accept = this.accept;
 
 	function mimeAllowed( file ) {
-		var i, mimeTest,
-			mimeType = file.type;
+		var mimeType = file.type;
 
 		if ( !accept || !mimeType ) {
 			return true;
 		}
 
-		for ( i = 0; i < accept.length; i++ ) {
-			mimeTest = accept[ i ];
+		for ( var i = 0; i < accept.length; i++ ) {
+			var mimeTest = accept[ i ];
 			if ( mimeTest === mimeType ) {
 				return true;
-			} else if ( mimeTest.substr( -2 ) === '/*' ) {
-				mimeTest = mimeTest.substr( 0, mimeTest.length - 1 );
-				if ( mimeType.substr( 0, mimeTest.length ) === mimeTest ) {
+			} else if ( mimeTest.slice( -2 ) === '/*' ) {
+				mimeTest = mimeTest.slice( 0, mimeTest.length - 1 );
+				if ( mimeType.slice( 0, mimeTest.length ) === mimeTest ) {
 					return true;
 				}
 			}

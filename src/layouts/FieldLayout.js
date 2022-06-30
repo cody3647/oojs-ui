@@ -64,8 +64,6 @@
  * @throws {Error} An error is thrown if no widget is specified
  */
 OO.ui.FieldLayout = function OoUiFieldLayout( fieldWidget, config ) {
-	var id;
-
 	// Allow passing positional parameters inside the config object
 	if ( OO.isPlainObject( fieldWidget ) && config === undefined ) {
 		config = fieldWidget;
@@ -118,18 +116,14 @@ OO.ui.FieldLayout = function OoUiFieldLayout( fieldWidget, config ) {
 		}
 	} else {
 		// We can't use `label for` with non-form elements, use `aria-labelledby` instead
-		id = OO.ui.generateElementId();
+		var id = OO.ui.generateElementId();
 		this.$label.attr( 'id', id );
 		this.fieldWidget.setLabelledBy( id );
 
 		// Forward clicks on the label to the widget, like `label for` would do
-		this.$label.on( 'click', function () {
-			this.fieldWidget.simulateLabelClick();
-		}.bind( this ) );
+		this.$label.on( 'click', this.onLabelClick.bind( this ) );
 		if ( this.helpInline ) {
-			this.$help.on( 'click', function () {
-				this.fieldWidget.simulateLabelClick();
-			}.bind( this ) );
+			this.$help.on( 'click', this.onLabelClick.bind( this ) );
 		}
 	}
 	this.$element
@@ -168,6 +162,15 @@ OO.mixinClass( OO.ui.FieldLayout, OO.ui.mixin.TitledElement );
  */
 OO.ui.FieldLayout.prototype.onFieldDisable = function ( value ) {
 	this.$element.toggleClass( 'oo-ui-fieldLayout-disabled', value );
+};
+
+/**
+ * Handle click events on the field label, or inline help
+ *
+ * @param {jQuery.Event} event
+ */
+OO.ui.FieldLayout.prototype.onLabelClick = function () {
+	this.fieldWidget.simulateLabelClick();
 };
 
 /**
@@ -326,7 +329,6 @@ OO.ui.FieldLayout.prototype.setNotices = function ( notices ) {
  * @private
  */
 OO.ui.FieldLayout.prototype.updateMessages = function () {
-	var i;
 	this.$messages.empty();
 
 	if (
@@ -341,6 +343,7 @@ OO.ui.FieldLayout.prototype.updateMessages = function () {
 		return;
 	}
 
+	var i;
 	for ( i = 0; i < this.errors.length; i++ ) {
 		this.$messages.append( this.makeMessage( 'error', this.errors[ i ] ) );
 	}
