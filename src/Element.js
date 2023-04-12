@@ -44,13 +44,7 @@ OO.ui.Element = function OoUiElement( config ) {
 	// Initialization
 	var doc = OO.ui.Element.static.getDocument( this.$element );
 	if ( Array.isArray( config.classes ) ) {
-		this.$element.addClass(
-			// Remove empty strings to work around jQuery bug
-			// https://github.com/jquery/jquery/issues/4998
-			config.classes.filter( function ( val ) {
-				return val;
-			} )
-		);
+		this.$element.addClass( config.classes );
 	}
 	if ( config.id ) {
 		this.setElementId( config.id );
@@ -767,6 +761,10 @@ OO.ui.Element.static.scrollIntoView = function ( elOrPosition, config ) {
 	}, config.padding );
 
 	var animate = config.animate !== false;
+	if ( window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches ) {
+		// Respect 'prefers-reduced-motion' user preference
+		animate = false;
+	}
 
 	var animations = {};
 	var elementPosition = elOrPosition instanceof HTMLElement ?
@@ -873,8 +871,8 @@ OO.ui.Element.static.reconsiderScrollbars = function ( el ) {
 		el.removeChild( el.firstChild );
 	}
 	// Force reflow
-	// eslint-disable-next-line no-void
-	void el.offsetHeight;
+	// eslint-disable-next-line no-unused-expressions
+	el.offsetHeight;
 	// Reattach all children
 	for ( var i = 0, len = nodes.length; i < len; i++ ) {
 		el.appendChild( nodes[ i ] );

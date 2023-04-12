@@ -1,5 +1,5 @@
 Demo.static.pages.icons = function ( demo ) {
-	var imageList = Demo.static.imageLists[ demo.mode.theme ];
+	var imageList = Demo.static.imageLists[ demo.mode.theme ] || {};
 
 	var iconOrder = [
 		'movement',
@@ -9,6 +9,7 @@ Demo.static.pages.icons = function ( demo ) {
 		'moderation',
 		'editing-core',
 		'editing-styling',
+		'editing-functions',
 		'editing-list',
 		'editing-advanced',
 		'editing-citation',
@@ -27,7 +28,7 @@ Demo.static.pages.icons = function ( demo ) {
 			id: 'demo-section-indicators'
 		} );
 
-	Object.keys( imageList.indicators ).forEach( function ( indicator ) {
+	Object.keys( imageList.indicators || {} ).forEach( function ( indicator ) {
 		indicatorsFieldset.addItems( [
 			new OO.ui.FieldLayout(
 				new OO.ui.IndicatorWidget( {
@@ -47,7 +48,7 @@ Demo.static.pages.icons = function ( demo ) {
 			id: 'demo-section-' + name
 		} );
 
-		var icons = imageList[ 'icons-' + name ];
+		var icons = imageList[ 'icons-' + name ] || {};
 		Object.keys( icons ).forEach( function ( icon ) {
 			var deprecationMessage = icons[ icon ].deprecated;
 			var iconWidget = new OO.ui.IconWidget( {

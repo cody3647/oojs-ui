@@ -66,7 +66,7 @@ OO.ui.mixin.FloatableElement = function OoUiMixinFloatableElement( config ) {
 OO.ui.mixin.FloatableElement.prototype.setFloatableElement = function ( $floatable ) {
 	if ( this.$floatable ) {
 		this.$floatable.removeClass( 'oo-ui-floatableElement-floatable' );
-		this.$floatable.css( { left: '', top: '' } );
+		this.$floatable.css( { top: '', left: '', bottom: '', right: '' } );
 	}
 
 	this.$floatable = $floatable.addClass( 'oo-ui-floatableElement-floatable' );
@@ -176,7 +176,7 @@ OO.ui.mixin.FloatableElement.prototype.togglePositioning = function ( positionin
 				this.$floatableClosestScrollable = null;
 			}
 
-			this.$floatable.css( { left: '', right: '', top: '' } );
+			this.$floatable.css( { top: '', left: '', bottom: '', right: '' } );
 		}
 	}
 
@@ -283,11 +283,9 @@ OO.ui.mixin.FloatableElement.prototype.position = function () {
 
 	this.floatableOutOfView = this.hideWhenOutOfView &&
 		!this.isElementInViewport( this.$floatableContainer, this.$floatableClosestScrollable );
+	this.$floatable.toggleClass( 'oo-ui-element-hidden', this.floatableOutOfView );
 	if ( this.floatableOutOfView ) {
-		this.$floatable.addClass( 'oo-ui-element-hidden' );
 		return this;
-	} else {
-		this.$floatable.removeClass( 'oo-ui-element-hidden' );
 	}
 
 	this.$floatable.css( this.computePosition() );

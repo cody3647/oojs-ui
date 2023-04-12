@@ -53,11 +53,13 @@
 
 	&.oo-ui-widget-enabled {
 		> .oo-ui-buttonElement-button {
-			transition: background-color @transition-base, color @transition-base, border-color @transition-base, box-shadow @transition-base;
+			transition-property: background-color, color, border-color, box-shadow;
+			transition-duration: @transition-duration-base;
 
 			> .oo-ui-iconElement-icon,
 			> .oo-ui-indicatorElement-indicator {
-				transition: opacity @transition-base;
+				transition-property: opacity;
+				transition-duration: @transition-duration-base;
 
 				// Framed `:hover` styles are at `$-framed` below.
 				&:not( .oo-ui-image-invert ) {
@@ -369,9 +371,25 @@
 
 .theme-oo-ui-groupElement() {}
 
-.theme-oo-ui-iconElement() {}
+.theme-oo-ui-iconElement() {
+	// Support inverted high contrast mode in Windows (T180890)
+	@media ( forced-colors: active ) and ( prefers-color-scheme: dark ) {
+		&-icon:not( .oo-ui-image-invert ) {
+			// stylelint-disable-next-line plugin/no-unsupported-browser-features
+			filter: invert( 1 ) hue-rotate( 180deg );
+		}
+	}
+}
 
-.theme-oo-ui-indicatorElement() {}
+.theme-oo-ui-indicatorElement() {
+	// Support inverted high contrast mode in Windows (T180890)
+	@media ( forced-colors: active ) and ( prefers-color-scheme: dark ) {
+		&-indicator:not( .oo-ui-image-invert ) {
+			// stylelint-disable-next-line plugin/no-unsupported-browser-features
+			filter: invert( 1 ) hue-rotate( 180deg );
+		}
+	}
+}
 
 .theme-oo-ui-labelElement() {
 	.oo-ui-labelElement-label {

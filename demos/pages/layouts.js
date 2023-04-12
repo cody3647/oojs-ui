@@ -403,6 +403,122 @@ Demo.static.pages.layouts = function ( demo ) {
 			]
 		} ),
 		new Demo.LinkedFieldsetLayout( {
+			id: 'demo-section-fieldLayouts-no-label',
+			label: 'Field layouts with no label',
+			help: 'When no label is specified, the layouts take up the same width and height ' +
+				'despite different "align" values (first four examples below). ' +
+				'However, when help text is specified, they behave as if the label was also specified ' +
+				'and use the usual different widths and heights (next four examples). ' +
+				'The last four examples use a normal label, for comparison.',
+			helpInline: true,
+			items: [
+				new OO.ui.FieldLayout(
+					new OO.ui.ButtonWidget( {
+						label: 'Button'
+					} ),
+					{
+						align: 'top'
+					}
+				),
+				new OO.ui.FieldLayout(
+					new OO.ui.ButtonWidget( {
+						label: 'Button'
+					} ),
+					{
+						align: 'inline'
+					}
+				),
+				new OO.ui.FieldLayout(
+					new OO.ui.ButtonWidget( {
+						label: 'Button'
+					} ),
+					{
+						align: 'left'
+					}
+				),
+				new OO.ui.FieldLayout(
+					new OO.ui.ButtonWidget( {
+						label: 'Button'
+					} ),
+					{
+						align: 'right'
+					}
+				),
+				new OO.ui.FieldLayout(
+					new OO.ui.ButtonWidget( {
+						label: 'Button'
+					} ),
+					{
+						help: loremIpsum,
+						align: 'top'
+					}
+				),
+				new OO.ui.FieldLayout(
+					new OO.ui.ButtonWidget( {
+						label: 'Button'
+					} ),
+					{
+						help: loremIpsum,
+						align: 'inline'
+					}
+				),
+				new OO.ui.FieldLayout(
+					new OO.ui.ButtonWidget( {
+						label: 'Button'
+					} ),
+					{
+						help: loremIpsum,
+						align: 'left'
+					}
+				),
+				new OO.ui.FieldLayout(
+					new OO.ui.ButtonWidget( {
+						label: 'Button'
+					} ),
+					{
+						help: loremIpsum,
+						align: 'right'
+					}
+				),
+				new OO.ui.FieldLayout(
+					new OO.ui.ButtonWidget( {
+						label: 'Button'
+					} ),
+					{
+						label: 'Label (align: top)',
+						align: 'top'
+					}
+				),
+				new OO.ui.FieldLayout(
+					new OO.ui.ButtonWidget( {
+						label: 'Button'
+					} ),
+					{
+						label: 'Label (align: inline)',
+						align: 'inline'
+					}
+				),
+				new OO.ui.FieldLayout(
+					new OO.ui.ButtonWidget( {
+						label: 'Button'
+					} ),
+					{
+						label: 'Label (align: left)',
+						align: 'left'
+					}
+				),
+				new OO.ui.FieldLayout(
+					new OO.ui.ButtonWidget( {
+						label: 'Button'
+					} ),
+					{
+						label: 'Label (align: right)',
+						align: 'right'
+					}
+				)
+			]
+		} ),
+		new Demo.LinkedFieldsetLayout( {
 			id: 'demo-section-horizontalLayout',
 			label: 'HorizontalLayout',
 			help: 'Inline FieldsetLayout help',
@@ -505,19 +621,23 @@ Demo.static.pages.layouts = function ( demo ) {
 									} ).addTabPanels( [
 										new Demo.SampleTabPanel( 'first', {
 											expanded: false,
-											label: 'One tab'
+											label: 'One tab',
+											content: [ $( '<p>' ).text( 'First tab' ) ]
 										} ),
 										new Demo.SampleTabPanel( 'second', {
 											expanded: false,
-											label: 'Two tab'
+											label: 'Two tab',
+											content: [ $( '<p>' ).text( 'Second tab' ) ]
 										} ),
 										new Demo.SampleTabPanel( 'third', {
 											expanded: false,
-											label: 'Three tab'
+											label: 'Three tab',
+											content: [ $( '<p>' ).text( 'Third tab' ) ]
 										} ),
 										new Demo.SampleTabPanel( 'fourth', {
 											expanded: false,
-											label: 'Four tab'
+											label: 'Four tab',
+											content: [ $( '<p>' ).text( 'Fourth tab' ) ]
 										} ),
 										new Demo.SampleTabPanel( 'long', {
 											expanded: false,

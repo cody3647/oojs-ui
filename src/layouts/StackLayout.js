@@ -31,6 +31,8 @@
  * @cfg {boolean} [continuous=false] Show all panels, one after another. By default, only one panel
  *  is displayed at a time.
  * @cfg {OO.ui.Layout[]} [items] Panel layouts to add to the stack layout.
+ * @cfg {boolean} [hideUntilFound] Hide panels using hidden="until-found", meaning they will be
+ *  shown when matched with the browser's find-and-replace feature if supported.
  */
 OO.ui.StackLayout = function OoUiStackLayout( config ) {
 	// Configuration initialization
@@ -47,6 +49,7 @@ OO.ui.StackLayout = function OoUiStackLayout( config ) {
 	// Properties
 	this.currentItem = null;
 	this.continuous = !!config.continuous;
+	this.hideUntilFound = !!config.hideUntilFound;
 
 	// Initialization
 	this.$element.addClass( 'oo-ui-stackLayout' );
@@ -100,6 +103,17 @@ OO.ui.StackLayout.prototype.unsetCurrentItem = function () {
 };
 
 /**
+ * Set the hideUntilFound config (see contructor)
+ *
+ * @param {boolean} hideUntilFound
+ */
+OO.ui.StackLayout.prototype.setHideUntilFound = function ( hideUntilFound ) {
+	this.hideUntilFound = hideUntilFound;
+	// Force an update of the attributes used to hide/show items
+	this.updateHiddenState( this.items, this.currentItem );
+};
+
+/**
  * Add panel layouts to the stack layout.
  *
  * Panels will be added to the end of the stack layout array unless the optional index parameter
@@ -112,7 +126,7 @@ OO.ui.StackLayout.prototype.unsetCurrentItem = function () {
  * @return {OO.ui.StackLayout} The layout, for chaining
  */
 OO.ui.StackLayout.prototype.addItems = function ( items, index ) {
-	if ( !items || !items.length ) {
+	if ( !items || items.length === 0 ) {
 		return this;
 	}
 
@@ -246,12 +260,14 @@ OO.ui.StackLayout.prototype.updateHiddenState = function ( items, selectedItem )
 	if ( !this.continuous ) {
 		for ( var i = 0, len = items.length; i < len; i++ ) {
 			if ( !selectedItem || selectedItem !== items[ i ] ) {
-				items[ i ].toggle( false );
+				// jQuery "fixes" the value of the hidden attribute to always be "hidden"
+				// Browsers which don't support 'until-found' will still hide the element
+				items[ i ].$element[ 0 ].setAttribute( 'hidden', this.hideUntilFound ? 'until-found' : 'hidden' );
 				items[ i ].$element.attr( 'aria-hidden', 'true' );
 			}
 		}
 		if ( selectedItem ) {
-			selectedItem.toggle( true );
+			selectedItem.$element[ 0 ].removeAttribute( 'hidden' );
 			selectedItem.$element.removeAttr( 'aria-hidden' );
 		}
 	}

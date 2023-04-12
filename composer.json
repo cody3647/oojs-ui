@@ -4,7 +4,7 @@
 	"homepage": "https://www.mediawiki.org/wiki/OOUI",
 	"license": "MIT",
 	"require": {
-		"php": ">=7.2.9"
+		"php": ">=7.4.3"
 	},
 	"authors": [
 		{
@@ -28,16 +28,20 @@
 			"email": "legoktm@gmail.com"
 		},
 		{
+			"name": "Moriel Schottlender",
+			"email": "mschottlender@wikimedia.org"
+		},
+		{
 			"name": "Prateek Saxena",
 			"email": "prtksxna@gmail.com"
 		},
 		{
 			"name": "Roan Kattouw",
-			"email": "roan@wikimedia.org"
+			"email": "roan.kattouw@gmail.com"
 		},
 		{
-			"name": "Rob Moen",
-			"email": "rmoen@wikimedia.org"
+			"name": "Thiemo Kreuz",
+			"email": "thiemo.kreuz@wikimedia.de"
 		},
 		{
 			"name": "Timo Tijhof",
@@ -45,16 +49,20 @@
 		},
 		{
 			"name": "Trevor Parscal",
-			"email": "trevor@wikimedia.org"
+			"email": "trevorparscal@gmail.com"
+		},
+		{
+			"name": "Volker E.",
+			"email": "volker.e@wikimedia.org"
 		}
 	],
 	"require-dev": {
-		"mediawiki/mediawiki-codesniffer": "39.0.0",
-		"mediawiki/mediawiki-phan-config": "0.11.1",
+		"mediawiki/mediawiki-codesniffer": "41.0.0",
+		"mediawiki/mediawiki-phan-config": "0.12.0",
 		"mediawiki/minus-x": "1.1.1",
 		"php-parallel-lint/php-console-highlighter": "1.0.0",
 		"php-parallel-lint/php-parallel-lint": "1.3.2",
-		"phpunit/phpunit": "^8.5"
+		"phpunit/phpunit": "9.5.28"
 	},
 	"autoload": {
 		"classmap": [

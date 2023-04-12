@@ -1,4 +1,190 @@
 # OOUI Release History
+
+## v0.46.3 / 2023-02-06
+### Features
+* Respect prefers-reduce-motion preference when scrolling to an element (David Lynch)
+* Window: Preserve scroll position when resizing windows (Bartosz Dziewoński)
+
+### Styles
+* Restore z-index border fix for hovering buttons in group (Ed Sanders)
+
+
+## v0.46.2 / 2023-01-17
+### Features
+* DraggableElement: Enable Drag'n'Drop on Chrome on Android (Michael Große)
+* MultilineTextInputWidget: Work around recent Firefox bug calculating wrong .scrollheight (Thiemo Kreuz)
+
+### Styles
+* MessageWidget: Replace 'check' with 'success' icon (Volker E.)
+* icons: Add 'success' to the 'alerts' icon pack (Volker E.)
+* icons: Add Wikimedia logos to 'wikimedia' icon pack (Volker E.)
+
+### Code
+* Fix `.addItems()` methods silently ignoring non-array input (Thiemo Kreuz)
+* Remove uses of `void` (Bartosz Dziewoński)
+* Replace `remove`/`addClass` with `toggleClass` where possible (Thiemo Kreuz)
+
+
+## v0.46.1 / 2023-01-07
+### Code
+* php: Declare all class properties (Umherirrender)
+* php: Fix undeclared method issues from phan (Umherirrender)
+
+
+## v0.46.0 / 2022-12-07
+### Breaking changes
+* [BREAKING CHANGE] Raise claimed PHP need from 7.2+ to 7.4+ (James D. Forrester)
+
+### Features
+* Allow minlength attribute to be set in text input based widgets (dreamyjazz)
+
+### Styles
+* WikimediaUI theme: Remove negative top/bottom margins on dropdown menus (Volker E.)
+* WikimediaUI theme: Use design-first backdrop color (Volker E.)
+* icons: Minor file size optimization for the new 'palette' icons (Thiemo Kreuz)
+* icons: Update warning color to new design-first `#edab00` (Volker E.)
+
+### Code
+* Add some small pieces of missing documentation (Thiemo Kreuz)
+* Avoid PHP notice in IndexLayout::getTabPanel() (Daimona Eaytoy)
+* FloatableElement: Clear all relevant properties when not positioning (Bartosz Dziewoński)
+* MenuSelectWidget: Remove unneeded 'width: 100%;' causing incorrect width (Bartosz Dziewoński)
+* OutlineOptionWidget: Fix setting default indent level (Bartosz Dziewoński)
+* PHP: Fix multiple issues in StackLayout::setItem() (Thiemo Kreuz)
+* PHP: Optimize code initializing default configuration (Thiemo Kreuz)
+* Remove unused "multiline" configuration (Thiemo Kreuz)
+* build: Update 'wikimedia-ui-base' to latest v0.20.0 (Volker E.)
+* build: Update mediawiki/mediawiki-codesniffer (Umherirrender)
+* build: Update mediawiki/mediawiki-phan-config to 0.12.0 (Daimona Eaytoy)
+* build: Update stylelint-config-wikimedia (Umherirrender)
+* build: Update wikimedia-ui-base to 0.21.0 (Volker E.)
+* build: Upgrade PHPUnit from ^8.5 to ^9.5 (James D. Forrester)
+* demo: Fix preserving scroll position when changing options (Bartosz Dziewoński)
+* demo: Scroll to URL fragment on load (Bartosz Dziewoński)
+* docs: Fix and add all missing PHPDoc tags (Thiemo Kreuz)
+
+
+## v0.45.0 / 2022-09-26
+### Breaking changes
+* [BREAKING CHANGE] Raise jQuery requirement from v3.6.0 to v3.6.1 (James D. Forrester)
+* [BREAKING CHANGE] icons: Drop stopHand, renamed to hand since v0.43.0 (James D. Forrester)
+
+### Features
+* Allow custom menu class to be passed in to `OO.ui.ButtonMenuSelectWidget` (Thalia Chan)
+
+### Styles
+* icons: Add 'palette' to 'editing-advanced' (Volker E.)
+* icons: Minimize 'search' icon (Thiemo Kreuz)
+* WikimediaUI theme: Remove selected Tabs state handling (Volker E.)
+
+### Code
+* demos: Make icons page more robust (Thiemo Kreuz)
+* README: Update some of the release steps to avoid typo mistakes (James D. Forrester)
+* AUTHORS: Update for the first time since 2017(!) and composer.json listing too (James D. Forrester)
+
+
+## 0.44.5 / 2023-02-06
+### Styles
+* build: Update 'wikimedia-ui-base' to v0.20.0 (Volker E.)
+
+
+## 0.44.4 / 2022-12-12
+### Code
+* build: .gitreview: Swap defaultbranch for track (Sam Reed)
+* docs: Fix and add all missing PHPDoc tags (Thiemo Kreuz)
+* php: Declare all class properties (Umherirrender)
+* php: Fix undeclared method issues from phan (Umherirrender)
+* PHP: Optimize code initializing default configuration (Thiemo Kreuz)
+
+
+## v0.44.3 / 2022-08-16
+### Features
+* DropdownWidget: Add screen reader support while collapsed (Bartosz Dziewoński)
+* SelectWidget: Introduce findFirstSelectedItem() for performance (Thiemo Kreuz)
+
+### Styles
+* Follow-up Ic69c931: Use z-index of 0 for creating stacking context in progress bar (Ed Sanders)
+* icons: Update 'info' icon to newest design (Volker E.)
+* icons: Remove unnecessary code from recently-added icons (Thiemo Kreuz)
+
+
+## v0.44.2 / 2022-07-27
+### Features
+* SelectWidget: Add Home/End/PageUp/PageDown support, tweak arrow keys wrapping (Bartosz Dziewoński)
+
+### Styles
+* FieldLayout: Adjust help popup with `align: left/right` and long label (Bartosz Dziewoński)
+* FieldLayout: Fix and document the behavior when no label is given (Bartosz Dziewoński)
+* PopupWidget: Fix clipping when the popup is forced to be narrower (Bartosz Dziewoński)
+* icons: Invert icons in dark/high contrast mode (Ed Sanders)
+
+### Code
+* Follow-up Ic4d3993d: Setup demo pages after append (Ed Sanders)
+
+
+## v0.44.1 / 2022-07-12
+### Features
+* Element: Added `alignToTop` as an option to `scrollIntoView` (Svantje Lilienthal)
+* TagMultiselectWidget: Support editing tags with jQuery-formatted labels (gtzatchkova)
+* TitledElement: Use `invisibleLabel` config as fallback for title (Ed Sanders)
+* Tool and PopupToolGroup: Add '`narrowConfig`' support (Ed Sanders)
+* Tool: Add config and setter for `displayBothIconAndLabel` (Ed Sanders)
+* Toolbar: Fix DOM order of tools and actions for tabbing (Bartosz Dziewoński)
+* Toolbar: Make '`action`' tools part of a single toolbar (Ed Sanders)
+* Window: Only use focus traps if the WindowManager is modal (Ed Sanders)
+* WindowManager: Add a `forceTrapFocus` option (Ed Sanders)
+* WindowManager: Check focus doesn't end up outside modal windows when focusing the page (Ed Sanders)
+* WindowManager: Handle focus traps using CSS (Ed Sanders)
+* WindowManager: Set '`inert`' as well as '`aria-hidden`' when opening modals (Ed Sanders)
+
+### Styles
+* FieldLayout: Expand label when there's no help (`align: 'left'/'right'`) (Bartosz Dziewoński)
+* ProgressBar: Adjust behaviour of indeterminate ProgressBar (Simone This Dot)
+* ProgressBar: Display incorrect overflow behavior in Safari (Simone This Dot)
+* WikimediaUI theme, demos: Unify focus outline for high contrast mode (Volker E.)
+* WikimediaUI theme: Fix height of ProcessDialog's navigation bar (Volker E.)
+* WikimediaUI theme: Remove unneeded `box-shadow-input-binary` variable (Volker E.)
+* Apex: Remove `@supports` feature query for calc – supported in all browsers (Ed Sanders)
+* styles: Remove outdated vendor properties (Volker E.)
+* icons: Add 'copy'/'cut'/'paste' icons to 'editing-advanced' (Ed Sanders)
+
+### Code
+* PageLayout: Fix documentation by moving a linebreak (Daimona Eaytoy)
+* Window: Add comment justifying focus traps with inert support (Ed Sanders)
+* Window: Separate out window focussing into separate method (Ed Sanders)
+* WindowManager: Fix isolation logic (Ed Sanders)
+* WindowManager: Fix typo insert->inert (Ed Sanders)
+* WindowManager: Follow-up Ie402f807fd: Set '`inert`' on construct when required (Ed Sanders)
+* WindowManager: Move var declarations inline (Ed Sanders)
+* WindowManager: Simplify teardown (Ed Sanders)
+* core: Move var declarations inline (Ed Sanders)
+* layouts: Move var declarations inline (Ed Sanders)
+* mixins: Move var declarations inline (Ed Sanders)
+* styles: Rename vars to be forward-compatible with Codex tokens (Volker E.)
+* widgets: Move var declarations inline (Ed Sanders)
+* windows: Move var declarations inline (Ed Sanders)
+* Tool*.js: Move var declarations inline (Ed Sanders)
+* *ToolGroup: Move var declarations inline (Ed Sanders)
+* demos: Add `autoFlip: false` to some popup demos (Bartosz Dziewoński)
+* demos: Add accessible labels to everything in the toolbars demo (Bartosz Dziewoński)
+* demos: Add demo for non-modal WindowManager (Ed Sanders)
+* demos: Append pages to a shared `$container`, not root `$element` (Ed Sanders)
+* demos: Apply desktop/mobile styles based on mode, not screen width (Ed Sanders)
+* demos: Don't reload whole demo when just switching page (Ed Sanders)
+* demos: Fix PHP demo styling (Ed Sanders)
+* demos: Fix header width calculation (Ed Sanders)
+* demos: Fix internal state when loading pages dynamically (Bartosz Dziewoński)
+* demos: Fix popups overlapping fixed header (Bartosz Dziewoński)
+* demos: Hide unstyled demo while CSS is loading (Ed Sanders)
+* demos: Remove @supports position:fixed feature query (Ed Sanders)
+* build: Update `.nvmrc` to reflect CI's node v14.7.5 (Volker E.)
+* build: Updating dependencies (libraryupgrader)
+* build: Updating grunt-banana-checker to 0.10.0 (libraryupgrader)
+* build: Updating npm dependencies (libraryupgrader)
+* build: Updating npm dependencies (libraryupgrader)
+* build: Updating npm dependencies (libraryupgrader)
+
+
 ## v0.44.0 / 2022-05-06
 ### Breaking changes
 * [BREAKING CHANGE] Drop support for IE<10, FF<38, Android<4.4 (Volker E.)

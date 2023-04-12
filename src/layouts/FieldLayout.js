@@ -62,6 +62,8 @@
  *  See <https://www.mediawiki.org/wiki/OOUI/Concepts#Overlays>.
  *
  * @throws {Error} An error is thrown if no widget is specified
+ *
+ * @property {OO.ui.Widget} fieldWidget
  */
 OO.ui.FieldLayout = function OoUiFieldLayout( fieldWidget, config ) {
 	// Allow passing positional parameters inside the config object
@@ -77,6 +79,12 @@ OO.ui.FieldLayout = function OoUiFieldLayout( fieldWidget, config ) {
 
 	// Configuration initialization
 	config = $.extend( { align: 'left', helpInline: false }, config );
+
+	if ( config.help && !config.label ) {
+		// Add an empty label. For some combinations of 'helpInline' and 'align'
+		// there would be no space in the interface to display the help text otherwise.
+		config.label = ' ';
+	}
 
 	// Parent constructor
 	OO.ui.FieldLayout.super.call( this, config );

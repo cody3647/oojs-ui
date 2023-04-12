@@ -148,6 +148,27 @@ OO.mixinClass( OO.ui.SelectWidget, OO.ui.mixin.GroupWidget );
  * @param {OO.ui.OptionWidget[]} items Removed items
  */
 
+/* Static Properties */
+
+/**
+ * Whether this widget will respond to the navigation keys Home, End, PageUp, PageDown.
+ *
+ * @static
+ * @inheritable
+ * @property {boolean}
+ */
+OO.ui.SelectWidget.static.handleNavigationKeys = false;
+
+/**
+ * Whether selecting items using arrow keys or navigation keys in this widget will wrap around after
+ * the user reaches the beginning or end of the list.
+ *
+ * @static
+ * @inheritable
+ * @property {boolean}
+ */
+OO.ui.SelectWidget.static.listWrapsAround = true;
+
 /* Static methods */
 
 /**
@@ -161,9 +182,9 @@ OO.ui.SelectWidget.static.normalizeForMatching = function ( text ) {
 	var normalized = text.trim().replace( /\s+/, ' ' ).toLowerCase();
 
 	// Normalize Unicode
-	// eslint-disable-next-line no-restricted-properties
+	// eslint-disable-next-line es-x/no-string-prototype-normalize
 	if ( normalized.normalize ) {
-		// eslint-disable-next-line no-restricted-properties
+		// eslint-disable-next-line es-x/no-string-prototype-normalize
 		normalized = normalized.normalize();
 	}
 	return normalized;
@@ -182,7 +203,7 @@ OO.ui.SelectWidget.prototype.onFocus = function ( event ) {
 	if ( event.target === this.$element[ 0 ] ) {
 		// This widget was focussed, e.g. by the user tabbing to it.
 		// The styles for focus state depend on one of the items being selected.
-		if ( !this.findSelectedItem() ) {
+		if ( !this.findFirstSelectedItem() ) {
 			item = this.findFirstSelectableItem();
 		}
 	} else {
@@ -321,35 +342,57 @@ OO.ui.SelectWidget.prototype.onMouseLeave = function () {
  */
 OO.ui.SelectWidget.prototype.onDocumentKeyDown = function ( e ) {
 	var handled = false,
-		selected = this.findSelectedItems(),
-		currentItem = this.findHighlightedItem() || (
-			Array.isArray( selected ) ? selected[ 0 ] : selected
-		),
-		firstItem = this.getItems()[ 0 ];
+		currentItem = ( this.isVisible() && this.findHighlightedItem() ) ||
+			( !this.multiselect && this.findSelectedItem() );
 
 	var nextItem;
-	if ( !this.isDisabled() && this.isVisible() ) {
+	if ( !this.isDisabled() ) {
 		switch ( e.keyCode ) {
 			case OO.ui.Keys.ENTER:
 				if ( currentItem ) {
-					// Was only highlighted, now let's select it. No-op if already selected.
+					// Select highlighted item or toggle when multiselect is enabled
 					this.chooseItem( currentItem );
 					handled = true;
 				}
 				break;
 			case OO.ui.Keys.UP:
 			case OO.ui.Keys.LEFT:
-				this.clearKeyPressBuffer();
-				nextItem = currentItem ?
-					this.findRelativeSelectableItem( currentItem, -1 ) : firstItem;
-				handled = true;
-				break;
 			case OO.ui.Keys.DOWN:
 			case OO.ui.Keys.RIGHT:
 				this.clearKeyPressBuffer();
-				nextItem = currentItem ?
-					this.findRelativeSelectableItem( currentItem, 1 ) : firstItem;
+				nextItem = this.findRelativeSelectableItem(
+					currentItem,
+					e.keyCode === OO.ui.Keys.UP || e.keyCode === OO.ui.Keys.LEFT ? -1 : 1,
+					null,
+					this.constructor.static.listWrapsAround
+				);
 				handled = true;
+				break;
+			case OO.ui.Keys.HOME:
+			case OO.ui.Keys.END:
+				if ( this.constructor.static.handleNavigationKeys ) {
+					this.clearKeyPressBuffer();
+					nextItem = this.findRelativeSelectableItem(
+						null,
+						e.keyCode === OO.ui.Keys.HOME ? 1 : -1,
+						null,
+						this.constructor.static.listWrapsAround
+					);
+					handled = true;
+				}
+				break;
+			case OO.ui.Keys.PAGEUP:
+			case OO.ui.Keys.PAGEDOWN:
+				if ( this.constructor.static.handleNavigationKeys ) {
+					this.clearKeyPressBuffer();
+					nextItem = this.findRelativeSelectableItem(
+						currentItem,
+						e.keyCode === OO.ui.Keys.PAGEUP ? -10 : 10,
+						null,
+						this.constructor.static.listWrapsAround
+					);
+					handled = true;
+				}
 				break;
 			case OO.ui.Keys.ESCAPE:
 			case OO.ui.Keys.TAB:
@@ -364,9 +407,12 @@ OO.ui.SelectWidget.prototype.onDocumentKeyDown = function ( e ) {
 		}
 
 		if ( nextItem ) {
-			if ( nextItem.constructor.static.highlightable ) {
+			if ( this.isVisible() && nextItem.constructor.static.highlightable ) {
 				this.highlightItem( nextItem );
 			} else {
+				if ( this.screenReaderMode ) {
+					this.highlightItem( nextItem );
+				}
 				this.chooseItem( nextItem );
 			}
 			this.scrollItemIntoView( nextItem );
@@ -443,7 +489,7 @@ OO.ui.SelectWidget.prototype.onDocumentKeyPress = function ( e ) {
 		return;
 	}
 
-	// eslint-disable-next-line es/no-string-fromcodepoint
+	// eslint-disable-next-line es-x/no-string-fromcodepoint
 	var c = String.fromCodePoint ? String.fromCodePoint( e.charCode ) :
 		String.fromCharCode( e.charCode );
 
@@ -452,10 +498,8 @@ OO.ui.SelectWidget.prototype.onDocumentKeyPress = function ( e ) {
 	}
 	this.keyPressBufferTimer = setTimeout( this.clearKeyPressBuffer.bind( this ), 1500 );
 
-	var selected = this.findSelectedItems();
-	var item = this.findHighlightedItem() || (
-		Array.isArray( selected ) ? selected[ 0 ] : selected
-	);
+	var item = ( this.isVisible() && this.findHighlightedItem() ) ||
+		( !this.multiselect && this.findSelectedItem() );
 
 	if ( this.keyPressBuffer === c ) {
 		// Common (if weird) special case: typing "xxxx" will cycle through all
@@ -475,6 +519,9 @@ OO.ui.SelectWidget.prototype.onDocumentKeyPress = function ( e ) {
 		if ( this.isVisible() && item.constructor.static.highlightable ) {
 			this.highlightItem( item );
 		} else {
+			if ( this.screenReaderMode ) {
+				this.highlightItem( item );
+			}
 			this.chooseItem( item );
 		}
 		this.scrollItemIntoView( item );
@@ -572,6 +619,18 @@ OO.ui.SelectWidget.prototype.findTargetItem = function ( e ) {
 };
 
 /**
+ * @return {OO.ui.OptionWidget|null} The first (of possibly many) selected item, if any
+ */
+OO.ui.SelectWidget.prototype.findFirstSelectedItem = function () {
+	for ( var i = 0; i < this.items.length; i++ ) {
+		if ( this.items[ i ].isSelected() ) {
+			return this.items[ i ];
+		}
+	}
+	return null;
+};
+
+/**
  * Find all selected items, if there are any. If the widget allows for multiselect
  * it will return an array of selected options. If the widget doesn't allow for
  * multiselect, it will return the selected option or null if no item is selected.
@@ -582,13 +641,13 @@ OO.ui.SelectWidget.prototype.findTargetItem = function ( e ) {
  *  if no item is selected
  */
 OO.ui.SelectWidget.prototype.findSelectedItems = function () {
-	var selected = this.items.filter( function ( item ) {
+	if ( !this.multiselect ) {
+		return this.findFirstSelectedItem();
+	}
+
+	return this.items.filter( function ( item ) {
 		return item.isSelected();
 	} );
-
-	return this.multiselect ?
-		selected :
-		selected[ 0 ] || null;
 };
 
 /**
@@ -869,14 +928,14 @@ OO.ui.SelectWidget.prototype.pressItem = function ( item ) {
 };
 
 /**
- * Choose an item.
+ * Select an item or toggle an item's selection when multiselect is enabled.
  *
  * Note that ‘choose’ should never be modified programmatically. A user can choose
  * an option with the keyboard or mouse and it becomes selected. To select an item programmatically,
  * use the #selectItem method.
  *
- * This method is identical to #selectItem, but may vary in subclasses that take additional action
- * when users choose an item with the keyboard or mouse.
+ * This method is not identical to #selectItem and may vary further in subclasses that take
+ * additional action when users choose an item with the keyboard or mouse.
  *
  * @param {OO.ui.OptionWidget} item Item to choose
  * @fires choose
@@ -899,42 +958,67 @@ OO.ui.SelectWidget.prototype.chooseItem = function ( item ) {
 
 /**
  * Find an option by its position relative to the specified item (or to the start of the option
- * array, if item is `null`). The direction in which to search through the option array is specified
- * with a number: -1 for reverse (the default) or 1 for forward. The method will return an option,
- * or `null` if there are no options in the array.
+ * array, if item is `null`). The direction and distance in which to search through the option array
+ * is specified with a number: e.g. -1 for the previous item (the default) or 1 for the next item,
+ * or 15 for the 15th next item, etc. The method will return an option, or `null` if there are no
+ * options in the array.
  *
  * @param {OO.ui.OptionWidget|null} item Item to describe the start position, or `null` to start at
  *  the beginning of the array.
- * @param {number} direction Direction to move in: -1 to move backward, 1 to move forward
+ * @param {number} offset Relative position: negative to move backward, positive to move forward
  * @param {Function} [filter] Only consider items for which this function returns
  *  true. Function takes an OO.ui.OptionWidget and returns a boolean.
+ * @param {boolean} [wrap=false] Do not wrap around after reaching the last or first item
  * @return {OO.ui.OptionWidget|null} Item at position, `null` if there are no items in the select
  */
-OO.ui.SelectWidget.prototype.findRelativeSelectableItem = function ( item, direction, filter ) {
-	var increase = direction > 0 ? 1 : -1,
+OO.ui.SelectWidget.prototype.findRelativeSelectableItem = function ( item, offset, filter, wrap ) {
+	var step = offset > 0 ? 1 : -1,
 		len = this.items.length;
+	if ( wrap === undefined ) {
+		wrap = true;
+	}
 
 	var nextIndex;
 	if ( item instanceof OO.ui.OptionWidget ) {
-		var currentIndex = this.items.indexOf( item );
-		nextIndex = ( currentIndex + increase + len ) % len;
+		nextIndex = this.items.indexOf( item );
 	} else {
 		// If no item is selected and moving forward, start at the beginning.
 		// If moving backward, start at the end.
-		nextIndex = direction > 0 ? 0 : len - 1;
+		nextIndex = offset > 0 ? 0 : len - 1;
+		offset -= step;
 	}
 
+	var previousItem = item;
+	var nextItem = null;
 	for ( var i = 0; i < len; i++ ) {
 		item = this.items[ nextIndex ];
 		if (
 			item instanceof OO.ui.OptionWidget && item.isSelectable() &&
 			( !filter || filter( item ) )
 		) {
-			return item;
+			nextItem = item;
 		}
-		nextIndex = ( nextIndex + increase + len ) % len;
+
+		if ( offset === 0 && nextItem && nextItem !== previousItem ) {
+			// We walked at least the desired number of steps *and* we've selected a different item.
+			// This is to ensure that disabled items don't cause us to get stuck or return null.
+			break;
+		}
+
+		nextIndex += step;
+		if ( nextIndex < 0 || nextIndex >= len ) {
+			if ( wrap ) {
+				nextIndex = ( nextIndex + len ) % len;
+			} else {
+				// We ran out of the list, return whichever was the last valid item
+				break;
+			}
+		}
+		if ( offset !== 0 ) {
+			offset -= step;
+		}
 	}
-	return null;
+	return nextItem;
 };
 
 /**
@@ -958,7 +1042,7 @@ OO.ui.SelectWidget.prototype.findFirstSelectableItem = function () {
  * @return {OO.ui.Widget} The widget, for chaining
  */
 OO.ui.SelectWidget.prototype.addItems = function ( items, index ) {
-	if ( !items || !items.length ) {
+	if ( !items || items.length === 0 ) {
 		return this;
 	}
 

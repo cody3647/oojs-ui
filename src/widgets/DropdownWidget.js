@@ -89,9 +89,8 @@ OO.ui.DropdownWidget = function OoUiDropdownWidget( config ) {
 	this.$handle.on( {
 		click: this.onClick.bind( this ),
 		keydown: this.onKeyDown.bind( this ),
-		// Hack? Handle type-to-search when menu is not expanded and not handling its own events.
-		keypress: this.menu.onDocumentKeyPressHandler,
-		blur: this.menu.clearKeyPressBuffer.bind( this.menu )
+		focus: this.onFocus.bind( this ),
+		blur: this.onBlur.bind( this )
 	} );
 	this.menu.connect( this, {
 		select: 'onMenuSelect',
@@ -114,7 +113,6 @@ OO.ui.DropdownWidget = function OoUiDropdownWidget( config ) {
 			'aria-autocomplete': 'list',
 			'aria-expanded': 'false',
 			'aria-haspopup': 'true',
-			'aria-owns': this.menu.getElementId(),
 			'aria-labelledby': labelId
 		} );
 	this.$element
@@ -199,28 +197,41 @@ OO.ui.DropdownWidget.prototype.onClick = function ( e ) {
  * @return {undefined|boolean} False to prevent default if event is handled
  */
 OO.ui.DropdownWidget.prototype.onKeyDown = function ( e ) {
-	if (
-		!this.isDisabled() &&
-		(
-			e.which === OO.ui.Keys.ENTER ||
-			(
-				e.which === OO.ui.Keys.SPACE &&
-				// Avoid conflicts with type-to-search, see SelectWidget#onKeyPress.
-				// Space only closes the menu is the user is not typing to search.
-				this.menu.keyPressBuffer === ''
-			) ||
-			(
-				!this.menu.isVisible() &&
-				(
-					e.which === OO.ui.Keys.UP ||
-					e.which === OO.ui.Keys.DOWN
-				)
-			)
-		)
-	) {
-		this.menu.toggle();
-		return false;
+	if ( !this.isDisabled() ) {
+		switch ( e.keyCode ) {
+			case OO.ui.Keys.ENTER:
+				this.menu.toggle();
+				return false;
+			case OO.ui.Keys.SPACE:
+				if ( this.menu.keyPressBuffer === '' ) {
+					// Avoid conflicts with type-to-search, see SelectWidget#onKeyPress.
+					// Space only opens the menu is the user is not typing to search.
+					this.menu.toggle();
+					return false;
+				}
+				break;
+		}
 	}
+};
+
+/**
+ * Handle focus events.
+ *
+ * @private
+ * @param {jQuery.Event} e Focus event
+ */
+OO.ui.DropdownWidget.prototype.onFocus = function () {
+	this.menu.toggleScreenReaderMode( true );
+};
+
+/**
+ * Handle blur events.
+ *
+ * @private
+ * @param {jQuery.Event} e Blur event
+ */
+OO.ui.DropdownWidget.prototype.onBlur = function () {
+	this.menu.toggleScreenReaderMode( false );
 };
 
 /**

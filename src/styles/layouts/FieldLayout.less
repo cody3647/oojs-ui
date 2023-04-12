@@ -3,18 +3,18 @@
 .oo-ui-fieldLayout {
 	display: block;
 
-	&:before,
-	&:after {
+	&::before,
+	&::after {
 		content: ' ';
 		display: table;
 	}
 
-	&:after {
+	&::after {
 		clear: both;
 	}
 
-	&.oo-ui-fieldLayout-align-left,
-	&.oo-ui-fieldLayout-align-right {
+	&.oo-ui-labelElement.oo-ui-fieldLayout-align-left,
+	&.oo-ui-labelElement.oo-ui-fieldLayout-align-right {
 		> .oo-ui-fieldLayout-body {
 			display: flex;
 
