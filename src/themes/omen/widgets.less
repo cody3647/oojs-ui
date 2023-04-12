@@ -52,6 +52,7 @@
 	// Identical to .theme-oo-ui-buttonSelectWidget, except for the `:focus` selector.
 	&.oo-ui-widget-enabled {
 		.oo-ui-buttonElement {
+			&.oo-ui-widget-enabled > .oo-ui-buttonElement-button:hover,
 			&.oo-ui-widget-enabled > .oo-ui-buttonElement-button:active {
 				z-index: 1;
 			}
@@ -94,6 +95,10 @@
 	padding-bottom: @border-width-base;
 
 	&:focus {
+		// The ButtonSelectWidget element is focusable when enabled, but we
+		// want the focus visual outline only on single ButtonOptionWidgets below.
+		// Support: Chrome <90 Also putting it on `disabled` as well as Chrome showed
+		// outline as soon as `tabindex` attribute was on element.
 		outline: 0;
 	}
 
@@ -127,7 +132,7 @@
 			.oo-ui-buttonOptionWidget.oo-ui-optionWidget-selected {
 				.oo-ui-buttonElement-button {
 					border-color: @border-color-base--focus;
-					box-shadow: @box-shadow-progressive--focus;
+					box-shadow: @box-shadow-progressive-filled--focus;
 					// In Windows high contrast mode the outline becomes visible.
 					outline: @outline-base--focus;
 				}
@@ -185,7 +190,7 @@
 		& + span {
 			background-color: @background-color-base;
 			background-size: 0 0;
-			.oo-ui-box-sizing( border-box );
+			box-sizing: border-box;
 			position: absolute;
 			left: 0;
 			width: @size-input-binary;
@@ -205,7 +210,7 @@
 		}
 
 		&:indeterminate {
-			& + span:before {
+			& + span::before {
 				content: ' ';
 				// `@color-base--inverted` as `background-color` due to Accent50 filled area below.
 				background-color: @color-base--inverted;
@@ -231,11 +236,8 @@
 
 		& + span {
 			cursor: pointer;
-			.oo-ui-transition(
-				background-color @transition-base,
-				border-color @transition-base,
-				box-shadow @transition-base
-			);
+			transition-property: background-color, border-color, box-shadow;
+			transition-duration: @transition-duration-base;
 		}
 
 		// `:focus` has to come first, otherwise a specificity race with `:hover:focus` etc is necessary
@@ -266,7 +268,7 @@
 			&:focus + span {
 				background-color: @background-color-input-binary--checked;
 				border-color: @border-color-input-binary--checked;
-				box-shadow: @box-shadow-progressive--focus;
+				box-shadow: @box-shadow-progressive-filled--focus;
 			}
 
 			&:hover + span {
@@ -408,9 +410,8 @@
 		.oo-ui-iconElement-icon,
 		.oo-ui-indicatorElement-indicator {
 			opacity: @opacity-icon-base;
-			.oo-ui-transition(
-				opacity @transition-base
-			);
+			transition-property: opacity;
+			transition-duration: @transition-duration-base;
 		}
 	}
 
@@ -423,7 +424,7 @@
 }
 
 .theme-oo-ui-dropdownWidget() {
-	width: 100%;
+	width: @size-full;
 	max-width: @max-width-input;
 	.oo-ui-inline-spacing( @margin-end-widget );
 
@@ -460,11 +461,8 @@
 	&.oo-ui-widget-enabled &-handle {
 		background-color: @background-color-framed;
 		color: @color-base;
-		.oo-ui-transition(
-			background-color @transition-base,
-			border-color @transition-base,
-			box-shadow @transition-base
-		);
+		transition-property: background-color, border-color, box-shadow;
+		transition-duration: @transition-duration-base;
 
 		&:hover {
 			background-color: @background-color-framed--hover;
@@ -484,16 +482,15 @@
 
 		&:focus {
 			border-color: @border-color-base--focus;
-			outline: 0;
+			outline: @outline-base--focus;
 			box-shadow: @box-shadow-base--focus;
 		}
 
 		.oo-ui-iconElement-icon,
 		.oo-ui-indicatorElement-indicator {
 			opacity: @opacity-icon-base;
-			.oo-ui-transition(
-				opacity @transition-base
-			);
+			transition-property: opacity;
+			transition-duration: @transition-duration-base;
 		}
 	}
 
@@ -513,6 +510,8 @@
 		background-color: @background-color-base--disabled;
 
 		&:focus {
+			// Support: Chrome <90 shows outline on click when element has `tabindex` attribute,
+			// no matter if it's value is `-1`.
 			outline: 0;
 		}
 
@@ -523,42 +522,30 @@
 }
 
 .theme-oo-ui-dropdownInputWidget() {
-	width: 100%;
+	width: @size-full;
 	max-width: @max-width-input;
 
 	select {
 		// Remove user agent styles.
+		/* stylelint-disable-next-line plugin/no-unsupported-browser-features */
 		-webkit-appearance: none;
+		/* stylelint-disable-next-line plugin/no-unsupported-browser-features */
 		-moz-appearance: none;
 		// Support Firefox <= 34: Anything apart from `transparent` mixes up `option` sizes.
 		background-color: transparent;
 		background-position: right @padding-horizontal-base center;
-		.oo-ui-box-sizing( border-box );
+		box-sizing: border-box;
 		// Support Firefox <= 34: `height` needed in addition to adding, otherwise oversized.
 		height: @size-base;
 		border: @border-base;
 		border-radius: @border-radius-base;
-		// Support IE 10: Don't try to use vertical padding on select!
 		padding-left: @padding-horizontal-base;
 		padding-right: @padding-end-dropdown;
 		font-size: inherit;
 		font-family: inherit;
 		vertical-align: middle;
-		// Support IE 8-9: Move custom arrow out of canvas and remove padding the custom arrow.
-		// Also affects IE 10. An absolute horror show.
-		/* stylelint-disable-next-line declaration-block-no-duplicate-properties */
-		background-position: ~'-9999em 0\9';
-		// stylelint-disable-next-line declaration-block-no-shorthand-property-overrides
-		padding: ~'0\9';
 
-		/* Support IE 10: Move it in again and also add `padding`. Because we talk to morons. */
-		@media screen and ( -ms-high-contrast: active ), ( -ms-high-contrast: none ) {
-			background-position: right @padding-horizontal-base center;
-			padding-left: @padding-horizontal-base;
-			padding-right: @padding-end-dropdown;
-		}
-
-		// Support IE 10-11: Hide the default arrow.
+		// Support: IE 11. Hide the default arrow.
 		&::-ms-expand {
 			display: none;
 		}
@@ -574,9 +561,8 @@
 
 	&.oo-ui-widget-enabled {
 		background-color: @background-color-framed;
-		.oo-ui-transition(
-			background-color @transition-base
-		);
+		transition-property: background-color;
+		transition-duration: @transition-duration-base;
 
 		&:hover {
 			background-color: @background-color-framed--hover;
@@ -584,10 +570,8 @@
 
 		select {
 			color: @color-base;
-			.oo-ui-transition(
-				border-color @transition-base,
-				box-shadow @transition-base
-			);
+			transition-property: border-color, box-shadow;
+			transition-duration: @transition-duration-base;
 
 			&:hover {
 				color: @color-base--hover;
@@ -601,7 +585,7 @@
 
 			&:focus {
 				border-color: @border-color-base--focus;
-				outline: 0;
+				outline: @outline-base--focus;
 				box-shadow: @box-shadow-base--focus;
 			}
 		}
@@ -631,7 +615,6 @@
 
 .theme-oo-ui-indicatorWidget() {
 	line-height: 2.5;
-	margin: @size-indicator / 2;
 	display: inline-block;
 	position: static;
 	top: auto;
@@ -655,10 +638,8 @@
 }
 
 .theme-oo-ui-menuOptionWidget() {
-	.oo-ui-transition(
-		background-color @transition-base,
-		color @transition-base
-	);
+	transition-property: background-color, color;
+	transition-duration: @transition-duration-base;
 
 	&-checkIcon {
 		display: none;
@@ -709,10 +690,8 @@
 
 .theme-oo-ui-menuSelectWidget() {
 	background-color: @background-color-base;
-	margin-top: -1px;
-	margin-bottom: -1px;
 	border: @border-menu;
-	border-radius: 0 0 @border-radius-base @border-radius-base;
+	border-radius: @border-radius-base;
 	box-shadow: @box-shadow-menu;
 }
 
@@ -736,6 +715,16 @@
 
 		> .oo-ui-iconElement-icon {
 			background-position: 0 @padding-vertical-message-block;
+		}
+
+		&.oo-ui-messageWidget-showClose {
+			padding-right: @min-size-base + @padding-horizontal-message-block;
+		}
+
+		> .oo-ui-messageWidget-close {
+			position: absolute;
+			top: 8px;
+			right: 8px;
 		}
 
 		&.oo-ui-flaggedElement-error {
@@ -850,10 +839,8 @@
 
 .theme-oo-ui-outlineOptionWidget() {
 	padding: @padding-menu-large;
-	.oo-ui-transition(
-		background-color @transition-base,
-		color @transition-base
-	);
+	transition-property: background-color, color;
+	transition-duration: @transition-duration-base;
 
 	&.oo-ui-optionWidget-highlighted {
 		background-color: @background-color-base--hover;
@@ -922,7 +909,9 @@
 	}
 
 	// Support: Progressively enhance for browser's which render `filter`.
+	/* stylelint-disable-next-line plugin/no-unsupported-browser-features */
 	@supports ( filter: drop-shadow( 0 0 0 ) ) {
+		/* stylelint-disable-next-line plugin/no-unsupported-browser-features */
 		filter: @filter-drop-shadow-menu;
 		// Safari can have visual glitches with lingering shadows in some contexts
 		// when using drop-shadow. This makes it be more zealous about cleaning
@@ -940,7 +929,7 @@
 		.oo-ui-popupWidget-anchor {
 			top: -@size-anchor;
 
-			&:before {
+			&::before {
 				bottom: -@size-anchor - 1px;
 				left: -@size-anchor;
 				// The subtracting-triangles method results in a line that
@@ -949,7 +938,7 @@
 				border-width: @size-anchor + 1px;
 			}
 
-			&:after {
+			&::after {
 				bottom: -@size-anchor - 1px;
 				left: -@size-anchor + 1px;
 				border-bottom-color: @background-color-base; // Using `@background-color-base` var here as `border*-color` is `background-color` subsitute
@@ -964,14 +953,14 @@
 		.oo-ui-popupWidget-anchor {
 			bottom: -@size-anchor;
 
-			&:before {
+			&::before {
 				top: -@size-anchor - 1px;
 				left: -@size-anchor;
 				border-top-color: @border-color-base;
 				border-width: @size-anchor + 1px;
 			}
 
-			&:after {
+			&::after {
 				top: -@size-anchor - 1px;
 				left: -@size-anchor + 1px;
 				border-top-color: @background-color-base; // Using `@background-color-base` var here as `border*-color` is `background-color` subsitute
@@ -986,14 +975,14 @@
 		.oo-ui-popupWidget-anchor {
 			left: -@size-anchor;
 
-			&:before {
+			&::before {
 				right: -@size-anchor - 1px;
 				top: -@size-anchor;
 				border-right-color: @border-color-base;
 				border-width: @size-anchor + 1px;
 			}
 
-			&:after {
+			&::after {
 				right: -@size-anchor - 1px;
 				top: -@size-anchor + 1px;
 				border-right-color: @background-color-base;  // Using `@background-color-base` var here as `border*-color` is `background-color` subsitute
@@ -1008,14 +997,14 @@
 		.oo-ui-popupWidget-anchor {
 			right: -@size-anchor;
 
-			&:before {
+			&::before {
 				left: -@size-anchor - 1px;
 				top: -@size-anchor;
 				border-left-color: @border-color-base;
 				border-width: @size-anchor + 1px;
 			}
 
-			&:after {
+			&::after {
 				left: -@size-anchor - 1px;
 				top: -@size-anchor + 1px;
 				border-left-color: @background-color-base;  // Using `@background-color-base` var here as `border*-color` is `background-color` subsitute
@@ -1025,11 +1014,8 @@
 	}
 
 	&-transitioning .oo-ui-popupWidget-popup {
-		.oo-ui-transition(
-			width @transition-base,
-			height @transition-base,
-			left @transition-base
-		);
+		transition-property: width, height, left;
+		transition-duration: @transition-duration-base;
 	}
 
 	&-head {
@@ -1039,6 +1025,7 @@
 
 		> .oo-ui-iconElement-icon {
 			left: @start-framed-icon-only;
+			/* stylelint-disable-next-line function-calc-no-unspaced-operator */
 			height: calc( @size-icon ~' + 2 * ' @margin-vertical-popup );
 		}
 
@@ -1084,6 +1071,11 @@
 }
 
 .theme-oo-ui-progressBarWidget() {
+	// Support Safari: Create a stacking context to prevent the bar from overflowing the
+	// `border-radius` of the component's root element by `position: relative` and
+	// `z-index` other than `auto`.
+	position: relative;
+	z-index: 0;
 	max-width: @max-width-base;
 	border: @border-base;
 	border-radius: @border-radius-progressbar;
@@ -1096,14 +1088,15 @@
 
 	&-bar {
 		height: @height-progressbar-bar;
-		.oo-ui-transition( width @transition-base );
+		transition-property: width;
+		transition-duration: @transition-duration-base;
 	}
 
 	&-indeterminate {
 		.oo-ui-progressBarWidget-bar {
-			.oo-ui-animation( oo-ui-progressBarWidget-slide 2s infinite linear );
-			width: 40%;
-			.oo-ui-transform( translate( -25% ) );
+			animation: oo-ui-progressBarWidget-slide 1.6s infinite linear;
+			width: 33%;
+			transform: translate( -25% );
 		}
 	}
 
@@ -1119,22 +1112,14 @@
 		}
 	}
 
-	.oo-ui-progressBarWidget-slide-frames() {
+	@keyframes oo-ui-progressBarWidget-slide {
 		from {
-			.oo-ui-transform( translate( -100% ) );
+			transform: translate( -100% );
 		}
 
 		to {
-			.oo-ui-transform( translate( 350% ) );
+			transform: translate( 300% );
 		}
-	}
-
-	@-webkit-keyframes oo-ui-progressBarWidget-slide {
-		.oo-ui-progressBarWidget-slide-frames;
-	}
-
-	@keyframes oo-ui-progressBarWidget-slide {
-		.oo-ui-progressBarWidget-slide-frames;
 	}
 }
 
@@ -1171,25 +1156,26 @@
 			background-color: @background-color-base;
 			position: absolute;
 			left: 0;
-			.oo-ui-box-sizing( border-box );
+			box-sizing: border-box;
 			width: @size-input-binary;
 			height: @size-input-binary;
 			border-color: @border-color-input-binary;
 			border-style: @border-style-base;
-			border-radius: 100%;
-			border-width: 0;
+			border-radius: @border-radius-input-radio;
 			border-width: @border-width-base;
 
 			// Needed for `:focus` state's inner white circle
-			&:before {
+			&::before {
 				content: ' ';
 				position: absolute;
-				top: -4px; // `px` unit due to pixel rounding error when using `@size-input-binary / 4`
-				left: -4px;
-				right: -4px;
-				bottom: -4px;
+				// `px` unit due to pixel rounding error when using
+				// `@size-input-binary / 4`.
+				top: @position-offset-input-radio-focus;
+				left: @position-offset-input-radio-focus;
+				right: @position-offset-input-radio-focus;
+				bottom: @position-offset-input-radio-focus;
 				border: @border-width-base @border-style-base transparent;
-				border-radius: 100%;
+				border-radius: @border-radius-input-radio;
 			}
 		}
 
@@ -1218,11 +1204,8 @@
 
 		& + span {
 			cursor: pointer;
-			.oo-ui-transition(
-				background-color @transition-base,
-				border-color @transition-base,
-				border-width @transition-base
-			);
+			transition-property: background-color, border-color, border-width;
+			transition-duration: @transition-duration-base;
 		}
 
 		&:hover + span {
@@ -1241,7 +1224,7 @@
 
 			// `:focus` has to come first, otherwise a specificity race with `:hover:focus` etc is necessary
 			&:focus + span {
-				&:before {
+				&::before {
 					border-color: @background-color-base;
 				}
 			}
@@ -1254,7 +1237,7 @@
 				border-color: @border-color-input-binary--active;
 				box-shadow: @box-shadow-input-binary--active;
 
-				&:before {
+				&::before {
 					border-color: @border-color-input-binary--active;
 				}
 			}
@@ -1280,9 +1263,11 @@
 
 .theme-oo-ui-radioSelectWidget() {
 	&:focus {
+		// The RadioSelectWidget element is focusable when enabled, but we
+		// want the focus visual outline only on single RadioOptionWidgets.
 		outline: 0;
 
-		[ type='radio' ]:checked + span:before {
+		[ type='radio' ]:checked + span::before {
 			border-color: @background-color-base;
 		}
 	}
@@ -1323,7 +1308,7 @@
 .theme-oo-ui-selectWidget() {}
 
 .theme-oo-ui-selectFileInputWidget() {
-	width: 100%;
+	width: @size-full;
 	max-width: @max-width-input;
 	min-height: @size-base;
 
@@ -1359,11 +1344,8 @@
 	&.oo-ui-widget-enabled {
 		&.oo-ui-selectFileWidget-dropTarget {
 			background-color: @background-color-base;
-			.oo-ui-transition(
-				background-color @transition-ease-medium,
-				color @transition-ease-medium,
-				border-color @transition-ease-medium
-			);
+			transition-property: background-color, color, border-color;
+			transition-duration: @transition-duration-medium;
 
 			&:hover {
 				border-color: @border-color-input--hover;
@@ -1371,17 +1353,15 @@
 		}
 
 		.oo-ui-selectFileInputWidget-info > .oo-ui-inputWidget-input {
-			.oo-ui-transition(
-				background-color @transition-ease-medium,
-				color @transition-ease-medium
-			);
+			transition-property: background-color, color;
+			transition-duration: @transition-duration-medium;
 		}
 
 		&.oo-ui-selectFileWidget-canDrop {
 			&.oo-ui-selectFileWidget-dropTarget,
 			.oo-ui-selectFileInputWidget-info > .oo-ui-inputWidget-input {
 				background-color: @background-color-primary;
-				color: @color-primary--active-hover;
+				color: @color-primary--active;
 			}
 		}
 	}
@@ -1403,11 +1383,8 @@
 	border-style: @border-style-base;
 	font-weight: bold;
 	line-height: @line-height-reset;
-	.oo-ui-transition(
-		background-color @transition-base,
-		color @transition-base,
-		border-color @transition-base
-	);
+	transition-property: background-color, color, border-color;
+	transition-duration: @transition-duration-base;
 
 	&.oo-ui-optionWidget-selected {
 		cursor: default;
@@ -1432,7 +1409,8 @@
 		.oo-ui-labelElement-label {
 			border-bottom: ( 2 * @border-width-base ) @border-style-base transparent;
 			padding: @padding-vertical-base @padding-horizontal-taboption-label ( @padding-vertical-base - 2 * @border-width-base ); // Provide additional `padding` on label itself for special tab focus
-			.oo-ui-transition( border-color @transition-base );
+			transition-property: border-color;
+			transition-duration: @transition-duration-base;
 		}
 
 		&.oo-ui-optionWidget-selected {
@@ -1469,17 +1447,15 @@
 		margin: @margin-taboption @margin-taboption -@border-width-base 0;
 		border-width: @border-width-base 0;
 		box-shadow: inset 0 0 0 0 @color-primary;
-		.oo-ui-transition(
-			color @transition-base,
-			box-shadow @transition-base
-		);
+		transition-property: color, box-shadow;
+		transition-duration: @transition-duration-base;
 
 		&.oo-ui-optionWidget-selected {
 			color: @color-primary;
 			box-shadow: inset 0 -@border-width-frameless-tab 0 0 @color-primary;
 		}
 
-		&.oo-ui-widget-enabled {
+		&.oo-ui-widget-enabled:not( .oo-ui-optionWidget-selected ) {
 			&:hover {
 				color: @color-primary--hover;
 				box-shadow: inset 0 -@border-width-frameless-tab 0 0 @color-primary--hover;
@@ -1509,7 +1485,7 @@
 
 	// Add background gradient to emphasize tab overflow.
 	&-mobile {
-		&:after {
+		&::after {
 			content: '';
 			position: absolute;
 			bottom: 0;
@@ -1519,13 +1495,13 @@
 			pointer-events: none;
 		}
 
-		&.oo-ui-tabSelectWidget-framed:after {
+		&.oo-ui-tabSelectWidget-framed::after {
 			.oo-ui-horizontal-gradient( fade( #eaecf0, 0 ), #eaecf0 );
 			// Override fallback color from mixin
 			background-color: transparent;
 		}
 
-		&.oo-ui-tabSelectWidget-frameless:after {
+		&.oo-ui-tabSelectWidget-frameless::after {
 			.oo-ui-horizontal-gradient( fade( #fff, 0 ), #fff );
 			// Override fallback color from mixin
 			background-color: transparent;
@@ -1540,7 +1516,7 @@
 }
 
 .theme-oo-ui-tagItemWidget() {
-	.oo-ui-box-sizing( border-box );
+	box-sizing: border-box;
 	width: auto;
 	max-width: 100%;
 	height: @height-tagitem;
@@ -1558,12 +1534,8 @@
 
 	&.oo-ui-widget-enabled {
 		color: @color-base;
-		.oo-ui-transition(
-			background-color @transition-base,
-			color @transition-base,
-			border-color @transition-base,
-			box-shadow @transition-base
-		);
+		transition-property: background-color, color, border-color, box-shadow;
+		transition-duration: @transition-duration-base;
 
 		&:hover {
 			background-color: @background-color-framed--hover;
@@ -1574,7 +1546,7 @@
 		&:focus {
 			border-color: @border-color-base--focus;
 			box-shadow: @box-shadow-base--focus;
-			outline: 0;
+			outline: @outline-base--focus;
 		}
 
 		&:not( .oo-ui-tagItemWidget-fixed ) {
@@ -1613,9 +1585,8 @@
 			border-radius: @height-tagitem;
 			padding-top: @size-button-tagitem-remove;
 			padding-left: @size-button-tagitem-remove;
-			.oo-ui-transition(
-				background-color @transition-base
-			);
+			transition-property: background-color;
+			transition-duration: @transition-duration-base;
 
 			&:hover {
 				background-color: @background-color-framed--hover;
@@ -1656,12 +1627,12 @@
 }
 
 .theme-oo-ui-tagMultiselectWidget() {
-	width: 100%;
+	width: @size-full;
 	max-width: @max-width-input;
 	vertical-align: top;
 
 	&-handle {
-		.oo-ui-box-sizing( border-box );
+		box-sizing: border-box;
 		min-height: @min-height-widget-base;
 		.oo-ui-inline-spacing( @margin-end-widget );
 		border: @border-base;
@@ -1678,7 +1649,7 @@
 			> input {
 				background-color: transparent;
 				color: @color-base--emphasized;
-				.oo-ui-box-sizing( border-box );
+				box-sizing: border-box;
 				height: @size-base - 2 * ( @size-modifier-border );
 				border: 0;
 				padding: @padding-vertical-base 0 @padding-vertical-base @start-tagmultiselect-input;
@@ -1691,11 +1662,13 @@
 				.mw-placeholder();
 
 				&:focus {
-					outline: 0; // Support: Chrome
+					outline: @outline-base--focus; // Support: Chrome
 				}
 
+				// Match appearance of TextInputWidget when empty
 				&:first-child {
-					margin-left: 0;
+					margin-left: -@size-tag-group-modifier;
+					padding-left: 0;
 				}
 			}
 		}
@@ -1737,10 +1710,8 @@
 		background-color: @background-color-base;
 
 		.oo-ui-tagMultiselectWidget-handle {
-			.oo-ui-transition(
-				border-color @transition-ease-medium,
-				box-shadow @transition-ease-medium
-			);
+			transition-property: border-color, box-shadow;
+			transition-duration: @transition-duration-medium;
 		}
 
 		&.oo-ui-tagMultiselectWidget-inlined {
@@ -1750,7 +1721,7 @@
 
 			&.oo-ui-tagMultiselectWidget-focus .oo-ui-tagMultiselectWidget-handle {
 				border-color: @border-color-base--focus;
-				outline: 0;
+				outline: @outline-base--focus;
 				box-shadow: @box-shadow-base--focus;
 			}
 
@@ -1796,7 +1767,7 @@
 }
 
 .theme-oo-ui-textInputWidget() {
-	width: 100%;
+	width: @size-full;
 	max-width: @max-width-input;
 
 	// `.oo-ui-inputWidget-input` serves both, `input` and `textarea`
@@ -1875,16 +1846,14 @@
 	&.oo-ui-widget-enabled {
 		.oo-ui-inputWidget-input {
 			box-shadow: @box-shadow-base; // necessary for smooth transition
-			.oo-ui-transition(
-				border-color @transition-ease-medium,
-				box-shadow @transition-ease-medium
-			);
+			transition-property: border-color, box-shadow;
+			transition-duration: @transition-duration-medium;
 
 			.mw-placeholder();
 
 			&:focus {
-				outline: 0;
 				border-color: @border-color-base--focus;
+				outline: @outline-base--focus;
 				box-shadow: @box-shadow-base--focus;
 
 				~ .oo-ui-iconElement-icon,
@@ -2002,12 +1971,10 @@
 	border: @border-input-binary;
 	border-radius: 1em;
 	.oo-ui-inline-spacing( @margin-end-widget );
-	.oo-ui-transition(
-		background-color @transition-ease-medium,
-		border-color @transition-ease-medium
-	);
+	transition-property: background-color, border-color;
+	transition-duration: @transition-duration-medium;
 
-	&:before {
+	&::before {
 		content: '';
 		display: block;
 		position: absolute;
@@ -2018,9 +1985,8 @@
 		border: 1px @border-style-base transparent;
 		border-radius: 1em;
 		z-index: 1;
-		.oo-ui-transition(
-			border-color @transition-ease-medium
-		);
+		transition-property: border-color;
+		transition-duration: @transition-duration-medium;
 	}
 
 	&-grip {
@@ -2030,11 +1996,8 @@
 		min-height: @min-size-base--small;
 		height: @size-base--small;
 		border-radius: @size-base--small;
-		.oo-ui-transition(
-			background-color @transition-ease-medium,
-			left @transition-base,
-			margin-left @transition-base
-		);
+		transition-property: background-color, left, margin-left;
+		transition-duration: @transition-duration-medium, @transition-duration-base, @transition-duration-base;
 	}
 
 	&-glow {
@@ -2082,17 +2045,16 @@
 			.oo-ui-toggleSwitchWidget-grip {
 				background-color: @background-color-base;
 				border-color: @background-color-base;
-				box-shadow: @box-shadow-input-binary;
 			}
 		}
 
 		&:focus {
-			border-color: @color-primary;
+			border-color: @border-color-base--focus;
 			box-shadow: @box-shadow-base--focus;
-			outline: 0;
+			outline: @outline-base--focus;
 
 			.oo-ui-toggleSwitchWidget-grip {
-				border-color: @color-primary;
+				border-color: @border-color-base--focus;
 			}
 		}
 
@@ -2103,7 +2065,6 @@
 			.oo-ui-toggleSwitchWidget-grip {
 				background-color: @background-color-base;
 				border-color: @background-color-base;
-				box-shadow: @box-shadow-input-binary;
 			}
 
 			&:hover {
@@ -2120,7 +2081,7 @@
 			&:focus {
 				border-color: @border-color-input-binary--checked;
 
-				&:before {
+				&::before {
 					border-color: @color-base--inverted;
 				}
 			}
@@ -2130,7 +2091,9 @@
 	&.oo-ui-widget-disabled {
 		background-color: @background-color-filled--disabled;
 		border-color: @border-color-base--disabled;
-		outline: 0; // Chrome when element has `tabindex` attribute
+		// Support: Chrome <90 shows outline on click when element has `tabindex` attribute,
+		// no matter if it's value is `-1`.
+		outline: 0;
 
 		&.oo-ui-toggleWidget-off .oo-ui-toggleSwitchWidget-grip {
 			border: @border-filled--disabled;
