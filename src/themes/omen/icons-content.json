@@ -74,7 +74,7 @@
 			}
 		},
 		"database": {
-			"file": "../wikimediaui/images/icons/database.svg"
+			"file": "images/icons/database.svg"
 		},
 		"die": {
 			"file": "images/icons/die.svg"
